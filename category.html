@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="دليل المنتجات والفئات البيطرية — المركز البيطري الحديث بإدارة الدكتور حسام جعفر." />
+    <title>فئة المنتجات | المركز البيطري الحديث</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#category-main">انتقل إلى المحتوى</a>
+    
+    <header class="site-header" id="top">
+      <div class="container nav-wrap">
+        <a class="brand" href="index.html" aria-label="المركز البيطري الحديث، الصفحة الرئيسية">
+          <img src="logo.jpg" alt="M.V.C المركز البيطري الحديث" class="brand-logo" />
+          <span><b>المركز البيطري الحديث</b><small>إدارة د. حسام جعفر</small></span>
+        </a>
+        <button class="menu-toggle" aria-label="فتح القائمة" aria-expanded="false">☰</button>
+        <nav class="main-nav" aria-label="التنقل الرئيسي">
+          <a href="index.html#home">الرئيسية</a>
+          <a href="index.html#products" class="active">دليل المنتجات</a>
+          <a href="index.html#partnerships">الشراكات</a>
+          <a href="index.html#ads">الإعلانات</a>
+          <a href="index.html#about">عن المركز</a>
+          <a href="index.html#location">موقعنا</a>
+          <a href="index.html#contact" class="nav-cta">تواصل معنا</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="category-main">
+      <!-- Breadcrumb Bar -->
+      <nav class="breadcrumb-bar" aria-label="مسار التنقل">
+        <div class="container breadcrumb-wrap">
+          <a href="index.html">الرئيسية</a>
+          <span>←</span>
+          <a href="index.html#products">دليل المنتجات</a>
+          <span>←</span>
+          <span id="breadcrumbCategoryTitle" class="current">جميع الفئات</span>
+        </div>
+      </nav>
+
+      <!-- Category Hero Section -->
+      <section class="category-hero-section">
+        <div class="container">
+          <div class="category-banner-card">
+            <div class="category-banner-icon" id="categoryIcon">⚕</div>
+            <div class="category-banner-info">
+              <span class="category-badge" id="categoryCountBadge">0 منتج متاحة</span>
+              <h1 id="categoryTitle">دليل المنتجات</h1>
+              <p id="categoryDescription">اختر فئة لمشاهدة منتجاتها المتاحة واستكشاف حلول الرعاية البيطرية المخصصة.</p>
+            </div>
+          </div>
+
+          <!-- Category Switcher Tabs -->
+          <div class="category-tabs-wrap" aria-label="التنقل بين الفئات">
+            <div class="category-tabs" id="categoryTabs"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Products Grid Section -->
+      <section class="section category-products-section">
+        <div class="container">
+          <div class="section-heading split">
+            <div>
+              <p class="eyebrow">المنتجات المتاحة في هذه الفئة</p>
+              <h2 id="sectionSubTitle">منتجات الرعاية والإنتاج</h2>
+            </div>
+            <a href="index.html#contact" class="button secondary">استفسار عام <span>←</span></a>
+          </div>
+
+          <div class="product-grid" id="categoryProductGrid"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="container footer-wrap">
+        <a class="brand" href="index.html">
+          <img src="logo.jpg" alt="M.V.C المركز البيطري الحديث" class="brand-logo footer-logo" />
+          <span><b>المركز البيطري الحديث</b><small>إدارة د. حسام جعفر</small></span>
+        </a>
+        <p>© <span id="year"></span> المركز البيطري الحديث. جميع الحقوق محفوظة.</p>
+        <a href="#top">العودة للأعلى ↑</a>
+      </div>
+    </footer>
+
+    <!-- Product Details Dialog -->
+    <dialog id="productDialog">
+      <button class="dialog-close" aria-label="إغلاق">×</button>
+      <div id="dialogContent"></div>
+    </dialog>
+
+    <script src="data.js?v=2.0"></script>
+    <script src="category.js?v=2.0"></script>
+  </body>
+</html>

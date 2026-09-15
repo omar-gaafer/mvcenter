@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="تسجيل الدخول - لوحة إدارة المركز البيطري الحديث" />
+    <title>تسجيل الدخول | المركز البيطري الحديث</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="login-body">
+    <div class="login-container">
+      <div class="login-card">
+        <div class="login-header">
+          <a href="index.html" class="login-brand">
+            <img src="logo.jpg" alt="المركز البيطري الحديث" class="login-logo" />
+            <div>
+              <b>المركز البيطري الحديث</b>
+              <small>لوحة الإدارة الشاملة</small>
+            </div>
+          </a>
+          <h2>تسجيل الدخول للوحة التحكم 🔒</h2>
+          <p>أدخل اسم المستخدم وكلمة السر المعتمدة للوصول للنظام</p>
+        </div>
+
+        <div id="loginAlert" class="login-alert" role="alert" style="display:none;"></div>
+
+        <form id="loginForm" class="login-form">
+          <label>اسم المستخدم
+            <div class="input-wrap">
+              <span class="input-icon">👤</span>
+              <input type="text" id="loginUsername" required placeholder="اسم المستخدم (مثال: admin)" autocomplete="username" />
+            </div>
+          </label>
+
+          <label>كلمة السر
+            <div class="input-wrap">
+              <span class="input-icon">🔑</span>
+              <input type="password" id="loginPassword" required placeholder="••••••••" autocomplete="current-password" />
+              <button type="button" class="pwd-toggle" id="togglePwdBtn" aria-label="إظهار كلمة السر">👁</button>
+            </div>
+          </label>
+
+          <div class="login-options">
+            <label class="remember-label">
+              <input type="checkbox" id="rememberMe" checked /> تذكر الجلسة على هذا الجهاز
+            </label>
+          </div>
+
+          <button type="submit" class="button primary login-btn" id="loginSubmitBtn">
+            <span>تسجيل الدخول</span>
+            <span class="arrow">➔</span>
+          </button>
+        </form>
+
+        <div class="login-footer">
+          <a href="index.html" class="back-site-link">← العودة للواجهة الرئيسية للموقع</a>
+        </div>
+      </div>
+    </div>
+
+    <script src="login.js?v=1.0"></script>
+  </body>
+</html>

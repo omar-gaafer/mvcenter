@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="لوحة إدارة المركز البيطري الحديث" />
+    <title>لوحة الإدارة | المركز البيطري الحديث</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="admin-body">
+    <div class="admin-shell">
+      <aside class="admin-sidebar" id="adminSidebar">
+        <a class="brand admin-brand" href="index.html">
+          <img src="logo.jpg" alt="M.V.C المركز البيطري الحديث" class="brand-logo admin-logo" />
+          <span><b>المركز البيطري الحديث</b><small>لوحة الإدارة الشاملة</small></span>
+        </a>
+        <nav class="admin-nav" aria-label="تنقل لوحة الإدارة">
+          <a class="selected" href="#products-admin"><span>◫</span> دليل المنتجات والعلاجات</a>
+          <a href="#categories-admin"><span>🖼</span> أغلفة الفئات الرئيسية</a>
+          <a href="#partners-admin"><span>♢</span> الشركاء والموردين</a>
+          <a href="#ads-admin"><span>📢</span> الإعلانات والتوعية</a>
+          <a href="#location-admin"><span>⌖</span> زيارة المركز والعنوان</a>
+          <a href="#contact-admin"><span>☎</span> التواصل والواتساب</a>
+          <a href="#messages-admin"><span>✉</span> رسائل الاستفسارات <b class="alert" id="unreadBadge">0</b></a>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="admin-user"><span>ح</span><div><b>د. حسام جعفر</b><small>مدير النظام</small></div></div>
+          <a href="index.html" class="view-site" target="_blank">↗ معاينة الموقع الرئيسي</a>
+          <button type="button" class="logout-btn" onclick="logoutAdmin()">🚪 تسجيل الخروج</button>
+        </div>
+      </aside>
+      <div class="sidebar-backdrop" id="adminSidebarBackdrop"></div>
+
+      <main class="admin-main">
+        <header class="admin-topbar">
+          <button class="admin-menu" id="adminMenuBtn" aria-label="فتح القائمة">☰</button>
+          <div>
+            <p id="currentAdminDate">لوحة التحكم التنفيذية</p>
+            <h1>إدارة محتوى المركز <span>✦</span></h1>
+          </div>
+          <div class="top-actions">
+            <button class="button primary" id="globalAddBtn" type="button">+ إضافة جديد ▾</button>
+            <div class="global-add-dropdown" id="globalAddDropdown">
+              <button type="button" class="dropdown-item" onclick="openProductModalForNew()">
+                <span style="color:#2563EB;">◫</span> إضافة علاج / منتج جديد
+              </button>
+              <button type="button" class="dropdown-item" onclick="openPartnerModalForNew()">
+                <span style="color:#F97316;">♢</span> إضافة شركة شريكة جديدة
+              </button>
+              <button type="button" class="dropdown-item" onclick="openAdModalForNew()">
+                <span style="color:#10B981;">📢</span> إضافة إعلان / توعية جديدة
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <!-- Section 1: Products & Treatments Admin -->
+        <section class="admin-panel inventory" id="products-admin">
+          <div class="panel-head">
+            <div>
+              <h2>دليل المنتجات والعلاجات</h2>
+              <p>إضافة وتعديل وحذف العلاجات والمنتجات داخل الفئات الأساسية</p>
+            </div>
+            <button type="button" class="button primary" id="addProductBtn" onclick="openProductModalForNew()">+ إضافة علاج / منتج جديد</button>
+          </div>
+          <div class="admin-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>العلاج / المنتج</th>
+                  <th>الفئة</th>
+                  <th>صورة المنتج</th>
+                  <th>الوصف المختصر</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="adminProductTable"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Section 2: Main Categories Cover Images Admin -->
+        <section class="admin-panel inventory" id="categories-admin" style="margin-top:25px;">
+          <div class="panel-head">
+            <div>
+              <h2>أغلفة الفئات الكروت الأساسية (6 فئات)</h2>
+              <p>تعديل صور الغلاف والعناوين التفصيلية لكروت الفئات الرئيسية</p>
+            </div>
+          </div>
+          <div class="admin-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>الفئة</th>
+                  <th>العنوان الفرعي</th>
+                  <th>صورة الغلاف الحالية</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="adminCategoryTable"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Section 3: Accredited Partners Admin -->
+        <section class="admin-panel inventory" id="partners-admin" style="margin-top:25px;">
+          <div class="panel-head">
+            <div>
+              <h2>الشركاء والموردين المعتمدين</h2>
+              <p>إدارة لوجو وأسماء الشركات الشريكة (بحجم صغير ومنظم على الموبايل)</p>
+            </div>
+            <button type="button" class="button primary" id="addPartnerBtn" onclick="openPartnerModalForNew()">+ إضافة شركة جديدة</button>
+          </div>
+          <div class="admin-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>الشركة</th>
+                  <th>اللوجو / الشعار</th>
+                  <th>مجال الشراكة</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="adminPartnerTable"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Section 4: Ads & Awareness Admin -->
+        <section class="admin-panel inventory" id="ads-admin" style="margin-top:25px;">
+          <div class="panel-head">
+            <div>
+              <h2>الإعلانات والتوعية والـ Pop-Up</h2>
+              <p>إضافة وتعديل الإعلانات، صور الواجهة الكروت الرئيسية، ورسائل الـ Pop-Up الترويجية</p>
+            </div>
+            <button type="button" class="button primary" id="addAdBtn" onclick="openAdModalForNew()">+ إضافة إعلان جديد</button>
+          </div>
+          <div class="admin-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>عنوان الإعلان</th>
+                  <th>التصنيف</th>
+                  <th>صورة الكارت الرئيسي</th>
+                  <th>العبارة الترويجية (Pop-Up)</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="adminAdTable"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Section 5: Visit the Center Section Admin -->
+        <section class="admin-panel inventory" id="location-admin" style="margin-top:25px;">
+          <div class="panel-head">
+            <div>
+              <h2>بيانات قسم "زيارة المركز" والعنوان</h2>
+              <p>تعديل العنوان التفصيلي وساعات العمل الرسمية الظاهرة في الموقع</p>
+            </div>
+          </div>
+          <form class="admin-form-block" id="locationForm">
+            <label>العنوان التفصيلي للمركز
+              <input id="locationAddressInput" required placeholder="مثال: الشارع الرئيسي، بجوار الصيدلية المركزية" />
+            </label>
+            <label>ساعات العمل الرسمية
+              <input id="locationHoursInput" required placeholder="مثال: يوميًا من 9:00 صباحًا حتى 10:00 مساءً" />
+            </label>
+            <label>رابط الموقع على خرائط Google Maps (يفتح عند ضغط الزائر على صورة الخريطة)
+              <input id="locationMapUrlInput" type="url" placeholder="مثال: https://maps.app.goo.gl/... أو https://goo.gl/maps/..." />
+            </label>
+            <button class="button primary" type="submit">حفظ وتحديث بيانات العنوان والخريطة</button>
+          </form>
+        </section>
+
+        <!-- Section 6: Contact & WhatsApp Numbers Admin -->
+        <section class="admin-panel inventory" id="contact-admin" style="margin-top:25px;">
+          <div class="panel-head">
+            <div>
+              <h2>إعدادات التواصل والواتساب</h2>
+              <p>تعديل الأرقام التي يفتح عليها الواتساب والاتصال عند ضغط الزائر</p>
+            </div>
+          </div>
+          <form class="admin-form-block" id="contactSettingsForm">
+            <label>رقم الهاتف للاتصال المباشر
+              <input id="contactPhoneInput" required placeholder="مثال: +201000000000" />
+            </label>
+            <label>رقم الواتساب (بدون فواصل أو كود الدولة)
+              <input id="contactWaInput" required placeholder="مثال: 201000000000" />
+            </label>
+            <button class="button primary" type="submit">تحديث أرقام التواصل فورًا</button>
+          </form>
+        </section>
+
+        <!-- Section 7: Incoming Messages Admin -->
+        <section class="admin-panel inventory" id="messages-admin" style="margin-top:25px;">
+          <div class="panel-head">
+            <div>
+              <h2>رسائل واستفسارات زوار الموقع</h2>
+              <p>عرض استفسارات الزوار المرسلة عبر نموذج التواصل بالموقع</p>
+            </div>
+          </div>
+          <div class="admin-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>الاسم</th>
+                  <th>الهاتف</th>
+                  <th>موضوع الاستفسار</th>
+                  <th>التاريخ</th>
+                  <th>الحالة</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="adminMessageTable"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Modal 1: Product / Treatment Modal -->
+    <div class="admin-modal" id="productModal" aria-hidden="true">
+      <div>
+        <button type="button" class="modal-close" id="closeProductModal" onclick="closeModal('#productModal')">×</button>
+        <p class="eyebrow">إدارة العلاجات والمنتجات</p>
+        <h2 id="productModalTitle">إضافة علاج / منتج جديد</h2>
+        <input type="hidden" id="productIdInput" />
+        <label>اسم العلاج / المنتج
+          <input id="productNameInput" required placeholder="مثال: مضاد حيوي واسع المجال" />
+        </label>
+        <label>الفئة التابع لها
+          <select id="productCategorySelect">
+            <option value="vet-treatments">الأدوية البيطرية</option>
+            <option value="vaccines">اللقاحات</option>
+            <option value="poultry-feed">أعلاف الدواجن</option>
+            <option value="livestock-feed">أعلاف المواشي</option>
+            <option value="farm-supplies">مستلزمات المزارع</option>
+            <option value="supplements">مكملات ودعم إنتاجي</option>
+          </select>
+        </label>
+        <label>صورة العلاج / المنتج
+          <input id="productImageInput" placeholder="ضع رابط الصورة أو اختر ملف من جهازك" />
+          <div style="margin-top:6px; font-size:12px; color:var(--muted);">
+            <b>أو رفع ملف من الجهاز:</b>
+            <input type="file" id="productFileInput" accept="image/*" style="margin-top:4px;" />
+          </div>
+          <img id="productFilePreview" alt="معاينة الصورة" style="display:none; max-height:80px; border-radius:6px; margin-top:8px; border:1px solid #ddd;" />
+        </label>
+        <label>الوصف المختصر (يظهر على الكارت)
+          <input id="productTextInput" placeholder="وصف سريع للمنتج" />
+        </label>
+        <label>التفاصيل الكاملة والدواعي
+          <textarea id="productDetailsInput" rows="3" placeholder="اكتب التفاصيل الكاملة وطريقة الاستخدام"></textarea>
+        </label>
+        <label>دواعي الاستخدام والخصائص (مفصولة بفواصل)
+          <input id="productUsesInput" placeholder="مثال: علاج الجهاز التنفسي, جرعات مخصصة, رفع المناعة" />
+        </label>
+        <button type="button" class="button primary modal-save" id="saveProductBtn" onclick="saveProductData()">حفظ العلاج للموقع</button>
+      </div>
+    </div>
+
+    <!-- Modal 2: Category Cover Modal -->
+    <div class="admin-modal" id="categoryModal" aria-hidden="true">
+      <div>
+        <button type="button" class="modal-close" id="closeCategoryModal" onclick="closeModal('#categoryModal')">×</button>
+        <p class="eyebrow">تعديل الفئة</p>
+        <h2 id="categoryModalTitle">تعديل غلاف الفئة</h2>
+        <input type="hidden" id="categorySlugInput" />
+        <label>اسم الفئة الكارت الأساسي
+          <input id="categoryTitleInput" required />
+        </label>
+        <label>صورة غلاف الفئة
+          <input id="categoryImageInput" placeholder="ضع رابط صورة الغلاف أو اختر ملف من جهازك" />
+          <div style="margin-top:6px; font-size:12px; color:var(--muted);">
+            <b>أو رفع ملف من الجهاز:</b>
+            <input type="file" id="categoryFileInput" accept="image/*" style="margin-top:4px;" />
+          </div>
+          <img id="categoryFilePreview" alt="معاينة الصورة" style="display:none; max-height:80px; border-radius:6px; margin-top:8px; border:1px solid #ddd;" />
+        </label>
+        <label>الوصف المختصر للكارت
+          <input id="categoryTextInput" />
+        </label>
+        <label>التفاصيل الظاهرة بالصفحة المخصصة
+          <textarea id="categoryDetailsInput" rows="3"></textarea>
+        </label>
+        <button type="button" class="button primary modal-save" id="saveCategoryBtn" onclick="saveCategoryData()">تحديث غلاف الفئة</button>
+      </div>
+    </div>
+
+    <!-- Modal 3: Partner Modal -->
+    <div class="admin-modal" id="partnerModal" aria-hidden="true">
+      <div>
+        <button type="button" class="modal-close" id="closePartnerModal" onclick="closeModal('#partnerModal')">×</button>
+        <p class="eyebrow">إدارة الشراكات</p>
+        <h2 id="partnerModalTitle">إضافة شركة شريكة جديدة</h2>
+        <input type="hidden" id="partnerIdInput" />
+        <label>اسم الشركة الشريكة
+          <input id="partnerNameInput" required placeholder="مثال: شركة سيفا البيطرية" />
+        </label>
+        <label>اللوجو / صورة الشعار (يظهر بحجمه المنظم 32px)
+          <input id="partnerLogoInput" placeholder="ضع رابط صورة الشعار أو اختر ملف من جهازك" />
+          <div style="margin-top:6px; font-size:12px; color:var(--muted);">
+            <b>أو رفع ملف من الجهاز:</b>
+            <input type="file" id="partnerFileInput" accept="image/*" style="margin-top:4px;" />
+          </div>
+          <img id="partnerFilePreview" alt="معاينة اللوجو" style="display:none; max-height:60px; border-radius:6px; margin-top:8px; border:1px solid #ddd;" />
+        </label>
+        <label>مجال الشراكة / التخصص
+          <input id="partnerTypeInput" placeholder="مثال: لقاحات بيطرية معتمدة" />
+        </label>
+        <button type="button" class="button primary modal-save" id="savePartnerBtn" onclick="savePartnerData()">حفظ وإضافة للموقع</button>
+      </div>
+    </div>
+
+    <!-- Modal 4: Ad Modal -->
+    <div class="admin-modal" id="adModal" aria-hidden="true">
+      <div>
+        <button type="button" class="modal-close" id="closeAdModal" onclick="closeModal('#adModal')">×</button>
+        <p class="eyebrow">إدارة الإعلانات والتوعية</p>
+        <h2 id="adModalTitle">إضافة إعلان جديد</h2>
+        <input type="hidden" id="adIdInput" />
+        <label>عنوان الإعلان
+          <input id="adTitleInput" required placeholder="مثال: استشر المختص قبل اختيار المنتج" />
+        </label>
+        <label>التصنيف / الوسم
+          <input id="adTagInput" placeholder="مثال: إعلان جديد أو توعية للمربين" />
+        </label>
+        <label>صورة الكارت الرئيسي للإعلان
+          <input id="adImageInput" placeholder="ضع رابط صورة الواجهة أو اختر ملف من جهازك" />
+          <div style="margin-top:6px; font-size:12px; color:var(--muted);">
+            <b>أو رفع ملف من الجهاز:</b>
+            <input type="file" id="adFileInput" accept="image/*" style="margin-top:4px;" />
+          </div>
+          <img id="adFilePreview" alt="معاينة صورة الإعلان" style="display:none; max-height:80px; border-radius:6px; margin-top:8px; border:1px solid #ddd;" />
+        </label>
+        <label>الوصف المختصر على الكارت
+          <input id="adTextInput" placeholder="نص مختصر يظهر بالكارت" />
+        </label>
+        <label>البيانات والتفاصيل الكاملة في الـ Pop-Up
+          <textarea id="adFullDetailsInput" rows="3" placeholder="اكتب البيانات التفصيلية التي تظهر في الـ Pop-Up"></textarea>
+        </label>
+        <label>العبارة الترويجية المميزة (Pop-Up)
+          <input id="adPromoPhraseInput" placeholder="مثال: ✦ استشارة بيطرية مجانية لدعم مزرعتك!" />
+        </label>
+        <label>
+          <input type="checkbox" id="adFeaturedInput" /> تمييز الإعلان بخلفية مشمشية مميزة
+        </label>
+        <button type="button" class="button primary modal-save" id="saveAdBtn" onclick="saveAdData()">حفظ الإعلان للموقع</button>
+      </div>
+    </div>
+
+    <!-- Modal 5: View Message Modal -->
+    <div class="admin-modal" id="messageModal" aria-hidden="true">
+      <div>
+        <button class="modal-close" id="closeMessageModal">×</button>
+        <p class="eyebrow">تفاصيل الاستفسار</p>
+        <h2 id="messageModalSender">رسالة استفسار</h2>
+        <p id="messageModalBody" style="font-size:13px; color:var(--muted); line-height:1.7; margin:15px 0; background:var(--cream); padding:15px; border-radius:8px;"></p>
+        <div class="dialog-actions">
+          <a class="button primary wa-button" id="messageModalWaBtn" href="#" target="_blank">الرد عبر واتساب <span>◉</span></a>
+          <button class="button secondary" id="deleteMsgBtn">حذف الرسالة</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="data.js?v=2.0"></script>
+    <script src="admin.js?v=2.0"></script>
+  </body>
+</html>
