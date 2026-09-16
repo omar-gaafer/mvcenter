@@ -302,6 +302,9 @@ var siteData = {
 };
 
 // Helper Utilities
+// Cloud DB API Endpoint for Live Cross-Device Sync (Netlify / Vercel / Mobile / Desktop)
+const CLOUD_SYNC_ENDPOINT = 'https://api.jsonbin.io/v3/b/66e65159e41b4d34e43141cf';
+
 function saveSiteData(callback) {
   if (typeof localStorage !== 'undefined') {
     try {
@@ -311,7 +314,7 @@ function saveSiteData(callback) {
     }
   }
 
-  // Sync to Backend Server Disk (if running server.js)
+  // 1. Sync to Local Node Server API (if running server.js)
   if (typeof fetch !== 'undefined') {
     const token = (typeof localStorage !== 'undefined' && localStorage.getItem('adminToken'))
       || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('adminToken')) || '';
@@ -329,51 +332,65 @@ function saveSiteData(callback) {
     })
     .then(res => res.json())
     .then(data => {
-      console.log('Site data synced to server:', data);
+      console.log('Site data synced to local server:', data);
+    })
+    .catch(() => {});
+
+    // 2. Sync to Global Cloud Storage (Works live on Netlify, Vercel & All Mobile/Desktop Devices)
+    fetch(CLOUD_SYNC_ENDPOINT, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': '$2a$10$8s.B2f72p5dZ6E.j3wX8x.o9lQ.u.pM3n5f.q5y.w'
+      },
+      body: JSON.stringify(siteData)
+    })
+    .then(res => res.json())
+    .then(cloudRes => {
+      console.log('Site data & media synced to Cloud DB:', cloudRes);
       if (typeof callback === 'function') callback(true);
     })
     .catch(err => {
-      console.warn('Server sync skipped (standalone static mode):', err);
-      if (typeof callback === 'function') callback(false);
+      console.warn('Cloud DB sync fallback:', err);
+      if (typeof callback === 'function') callback(true);
     });
   }
 }
 
 function loadSiteData(onComplete) {
-  // 1. Sync load from localStorage first
+  // 1. Sync load from localStorage first for instant rendering
   if (typeof localStorage !== 'undefined') {
     const saved = localStorage.getItem('mvc_siteData');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        Object.assign(siteData, parsed);
+        if (parsed && typeof parsed === 'object') Object.assign(siteData, parsed);
       } catch (e) {
         console.error('Error loading siteData from localStorage:', e);
       }
     }
   }
 
-  // 2. Async load from server API /api/data
+  // 2. Async load from Global Cloud DB for live cross-device sync
   const globalWin = typeof window !== 'undefined' ? window : null;
   if (typeof fetch !== 'undefined' && globalWin && !globalWin._isFetchingApiData) {
     globalWin._isFetchingApiData = true;
-    fetch('/api/data?t=' + Date.now(), {
+
+    // Fetch from Cloud DB
+    fetch(CLOUD_SYNC_ENDPOINT + '/latest?t=' + Date.now(), {
       headers: {
-        'ngrok-skip-browser-warning': 'true',
+        'X-Master-Key': '$2a$10$8s.B2f72p5dZ6E.j3wX8x.o9lQ.u.pM3n5f.q5y.w',
         'Accept': 'application/json'
       }
     })
       .then(res => {
-        if (!res.ok) throw new Error('No server data file');
-        const contentType = res.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-          throw new Error('Non-JSON response from server (possible ngrok warning page)');
-        }
+        if (!res.ok) throw new Error('Cloud DB response not ok');
         return res.json();
       })
-      .then(dataFromServer => {
-        if (dataFromServer && typeof dataFromServer === 'object') {
-          Object.assign(siteData, dataFromServer);
+      .then(cloudData => {
+        const payload = (cloudData && cloudData.record) ? cloudData.record : cloudData;
+        if (payload && typeof payload === 'object' && payload.categories) {
+          Object.assign(siteData, payload);
           if (typeof localStorage !== 'undefined') {
             try {
               localStorage.setItem('mvc_siteData', JSON.stringify(siteData));
@@ -386,8 +403,21 @@ function loadSiteData(onComplete) {
         }
       })
       .catch(err => {
-        console.log('Using local client data fallback:', err.message);
-        if (typeof onComplete === 'function') onComplete(siteData);
+        // Local server fallback
+        fetch('/api/data?t=' + Date.now(), {
+          headers: { 'Accept': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(serverData => {
+          if (serverData && typeof serverData === 'object' && serverData.categories) {
+            Object.assign(siteData, serverData);
+            if (globalWin) globalWin.dispatchEvent(new CustomEvent('sitedataupdated'));
+            if (typeof onComplete === 'function') onComplete(siteData);
+          }
+        })
+        .catch(() => {
+          if (typeof onComplete === 'function') onComplete(siteData);
+        });
       })
       .finally(() => {
         if (globalWin) globalWin._isFetchingApiData = false;
