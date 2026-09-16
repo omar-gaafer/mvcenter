@@ -263,8 +263,11 @@ function renderAdminAds() {
 }
 
 function editAd(id) {
-  const a = getAdById(id) || (siteData && siteData.ads ? siteData.ads.find(x => x.id == id) : null);
+  const currentData = typeof siteData !== 'undefined' ? siteData : (window.siteData || {});
+  const adsList = currentData.ads || (typeof siteData !== 'undefined' ? siteData.ads : []);
+  const a = (typeof getAdById === 'function' ? getAdById(id) : null) || adsList.find(x => x.id == id || String(x.id) === String(id));
   if (!a) return;
+
   $('#adIdInput').value = a.id;
   $('#adTitleInput').value = a.title || '';
   $('#adTagInput').value = a.tag || a.date || '';
@@ -282,9 +285,9 @@ function editAd(id) {
   $('#adTextInput').value = a.text || '';
   $('#adFullDetailsInput').value = a.fullDetails || '';
   $('#adPromoPhraseInput').value = a.promoPhrase || '';
-  $('#adFeaturedInput').checked = !!a.featured;
+  if ($('#adFeaturedInput')) $('#adFeaturedInput').checked = !!a.featured;
 
-  $('#adModalTitle').textContent = 'تعديل الإعلان والـ Pop-Up';
+  if ($('#adModalTitle')) $('#adModalTitle').textContent = 'تعديل الإعلان والـ Pop-Up';
   openModal('#adModal');
 }
 
@@ -292,7 +295,10 @@ function deleteAd(id) {
   if (!confirm('هل أنت تأكد من حذف هذا الإعلان؟')) return;
   const currentData = typeof siteData !== 'undefined' ? siteData : (window.siteData || {});
   if (currentData.ads) {
-    currentData.ads = currentData.ads.filter(a => a.id !== Number(id) && a.id != id);
+    currentData.ads = currentData.ads.filter(a => a.id != id && String(a.id) !== String(id));
+    if (typeof siteData !== 'undefined') siteData.ads = currentData.ads;
+    if (typeof window !== 'undefined' && window.siteData) window.siteData.ads = currentData.ads;
+    if (typeof data !== 'undefined' && data) data.ads = currentData.ads;
   }
   if (typeof saveSiteData === 'function') saveSiteData();
   renderAdminAds();
@@ -622,8 +628,7 @@ function saveAdData() {
   if (!title) { alert('يرجى إدخال عنوان الإعلان'); return; }
 
   if (adId) {
-    let a = getAdById(adId);
-    if (!a) a = currentData.ads.find(x => x.id == adId);
+    let a = (typeof getAdById === 'function' ? getAdById(adId) : null) || currentData.ads.find(x => x.id == adId || String(x.id) === String(adId));
     if (a) {
       a.title = title;
       a.tag = tag;
@@ -649,6 +654,11 @@ function saveAdData() {
       highlights: ['متابعة بيطرية متخصصة', 'دعم مستمر للمزارع والمربين']
     });
   }
+
+  // Ensure references are synced
+  if (typeof siteData !== 'undefined') siteData.ads = currentData.ads;
+  if (typeof window !== 'undefined') window.siteData = siteData;
+  if (typeof data !== 'undefined' && data) data.ads = currentData.ads;
 
   if (typeof saveSiteData === 'function') saveSiteData();
   renderAdminAds();
