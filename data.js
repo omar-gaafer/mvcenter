@@ -303,7 +303,7 @@ var siteData = {
 
 // Helper Utilities
 // Cloud DB API Endpoint for Live Cross-Device Sync (Netlify / Vercel / Mobile / Desktop)
-const CLOUD_SYNC_ENDPOINT = 'https://api.jsonbin.io/v3/b/66e65159e41b4d34e43141cf';
+const CLOUD_SYNC_ENDPOINT = 'https://extendsclass.com/api/json-storage/bin/fecfefe';
 
 function saveSiteData(callback) {
   if (typeof localStorage !== 'undefined') {
@@ -336,35 +336,34 @@ function saveSiteData(callback) {
     })
     .catch(() => {});
 
-    // 2. Sync to Global Cloud Storage (Works live on Netlify, Vercel & All Mobile/Desktop Devices)
+    // 2. Sync to Global Cloud Storage (Live on Netlify, Vercel & All Mobile/Desktop Devices globally)
     fetch(CLOUD_SYNC_ENDPOINT, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': '$2a$10$8s.B2f72p5dZ6E.j3wX8x.o9lQ.u.pM3n5f.q5y.w'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(siteData)
     })
     .then(res => res.json())
     .then(cloudRes => {
-      console.log('Site data & media synced to Cloud DB:', cloudRes);
+      console.log('Site data & media successfully synced to Cloud Storage:', cloudRes);
       if (typeof callback === 'function') callback(true);
     })
     .catch(err => {
-      console.warn('Cloud DB sync fallback:', err);
+      console.warn('Cloud DB sync warning:', err);
       if (typeof callback === 'function') callback(true);
     });
   }
 }
 
 function loadSiteData(onComplete) {
-  // 1. Sync load from localStorage first for instant rendering
+  // 1. Sync load from localStorage first for instant zero-latency rendering
   if (typeof localStorage !== 'undefined') {
     const saved = localStorage.getItem('mvc_siteData');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed === 'object') Object.assign(siteData, parsed);
+        if (parsed && typeof parsed === 'object' && parsed.categories) Object.assign(siteData, parsed);
       } catch (e) {
         console.error('Error loading siteData from localStorage:', e);
       }
@@ -377,9 +376,8 @@ function loadSiteData(onComplete) {
     globalWin._isFetchingApiData = true;
 
     // Fetch from Cloud DB
-    fetch(CLOUD_SYNC_ENDPOINT + '/latest?t=' + Date.now(), {
+    fetch(CLOUD_SYNC_ENDPOINT + '?t=' + Date.now(), {
       headers: {
-        'X-Master-Key': '$2a$10$8s.B2f72p5dZ6E.j3wX8x.o9lQ.u.pM3n5f.q5y.w',
         'Accept': 'application/json'
       }
     })
@@ -389,7 +387,7 @@ function loadSiteData(onComplete) {
       })
       .then(cloudData => {
         const payload = (cloudData && cloudData.record) ? cloudData.record : cloudData;
-        if (payload && typeof payload === 'object' && payload.categories) {
+        if (payload && typeof payload === 'object' && payload.categories && payload.products) {
           Object.assign(siteData, payload);
           if (typeof localStorage !== 'undefined') {
             try {
@@ -425,6 +423,12 @@ function loadSiteData(onComplete) {
   }
 }
 loadSiteData();
+
+// Enable automatic background live polling (every 15 seconds & when tab gets focus)
+if (typeof window !== 'undefined') {
+  window.addEventListener('focus', function() { loadSiteData(); });
+  setInterval(function() { loadSiteData(); }, 15000);
+}
 
 function getCategoryBySlug(slugOrTitle) {
   if (!slugOrTitle) return null;
