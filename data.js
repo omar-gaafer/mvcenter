@@ -306,6 +306,9 @@ var siteData = {
 const CLOUD_SYNC_ENDPOINT = 'https://extendsclass.com/api/json-storage/bin/fecfefe';
 
 function saveSiteData(callback) {
+  const globalWin = typeof window !== 'undefined' ? window : null;
+  if (globalWin) globalWin._isSavingApiData = true;
+
   if (typeof localStorage !== 'undefined') {
     try {
       localStorage.setItem('mvc_siteData', JSON.stringify(siteData));
@@ -347,16 +350,23 @@ function saveSiteData(callback) {
     .then(res => res.json())
     .then(cloudRes => {
       console.log('Site data & media successfully synced to Cloud Storage:', cloudRes);
+      if (globalWin) globalWin._isSavingApiData = false;
       if (typeof callback === 'function') callback(true);
     })
     .catch(err => {
       console.warn('Cloud DB sync warning:', err);
+      if (globalWin) globalWin._isSavingApiData = false;
       if (typeof callback === 'function') callback(true);
     });
+  } else {
+    if (globalWin) globalWin._isSavingApiData = false;
+    if (typeof callback === 'function') callback(true);
   }
 }
 
 function loadSiteData(onComplete) {
+  const globalWin = typeof window !== 'undefined' ? window : null;
+
   // 1. Sync load from localStorage first for instant zero-latency rendering
   if (typeof localStorage !== 'undefined') {
     const saved = localStorage.getItem('mvc_siteData');
@@ -371,8 +381,7 @@ function loadSiteData(onComplete) {
   }
 
   // 2. Async load from Global Cloud DB for live cross-device sync
-  const globalWin = typeof window !== 'undefined' ? window : null;
-  if (typeof fetch !== 'undefined' && globalWin && !globalWin._isFetchingApiData) {
+  if (typeof fetch !== 'undefined' && globalWin && !globalWin._isFetchingApiData && !globalWin._isSavingApiData) {
     globalWin._isFetchingApiData = true;
 
     // Fetch from Cloud DB
@@ -386,9 +395,17 @@ function loadSiteData(onComplete) {
         return res.json();
       })
       .then(cloudData => {
+        if (globalWin && globalWin._isSavingApiData) return; // Do not overwrite if currently saving/deleting
         const payload = (cloudData && cloudData.record) ? cloudData.record : cloudData;
         if (payload && typeof payload === 'object' && payload.categories && payload.products) {
-          Object.assign(siteData, payload);
+          siteData.categories = payload.categories || siteData.categories;
+          siteData.products = payload.products || siteData.products;
+          siteData.ads = payload.ads || siteData.ads;
+          siteData.partners = payload.partners || siteData.partners;
+          siteData.messages = payload.messages || siteData.messages;
+          if (payload.location) siteData.location = payload.location;
+          if (payload.contact) siteData.contact = payload.contact;
+
           if (typeof localStorage !== 'undefined') {
             try {
               localStorage.setItem('mvc_siteData', JSON.stringify(siteData));

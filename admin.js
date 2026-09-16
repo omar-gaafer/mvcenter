@@ -132,9 +132,20 @@ function editProduct(id) {
 
 function deleteProduct(id) {
   if (!confirm('هل أنت تأكد من حذف هذا المنتج/العلاج؟')) return;
-  data.products = data.products.filter(p => p.id !== Number(id));
-  if (typeof saveSiteData === 'function') saveSiteData();
+  const targetId = String(id);
+  const currentData = typeof siteData !== 'undefined' ? siteData : (window.siteData || data);
+  if (currentData.products) {
+    currentData.products = currentData.products.filter(p => String(p.id) !== targetId && p.id != id);
+    if (typeof siteData !== 'undefined') siteData.products = currentData.products;
+    if (typeof window !== 'undefined' && window.siteData) window.siteData.products = currentData.products;
+    if (typeof data !== 'undefined' && data) data.products = currentData.products;
+  }
   renderAdminProducts();
+  if (typeof saveSiteData === 'function') {
+    saveSiteData(() => {
+      renderAdminProducts();
+    });
+  }
 }
 
 // -------------------------------------------------------------
@@ -231,9 +242,20 @@ function editPartner(id) {
 
 function deletePartner(id) {
   if (!confirm('هل أنت تأكد من حذف هذه الشركة الشريكة؟')) return;
-  data.partners = data.partners.filter(p => p.id !== Number(id));
-  if (typeof saveSiteData === 'function') saveSiteData();
+  const targetId = String(id);
+  const currentData = typeof siteData !== 'undefined' ? siteData : (window.siteData || data);
+  if (currentData.partners) {
+    currentData.partners = currentData.partners.filter(p => String(p.id) !== targetId && p.id != id);
+    if (typeof siteData !== 'undefined') siteData.partners = currentData.partners;
+    if (typeof window !== 'undefined' && window.siteData) window.siteData.partners = currentData.partners;
+    if (typeof data !== 'undefined' && data) data.partners = currentData.partners;
+  }
   renderAdminPartners();
+  if (typeof saveSiteData === 'function') {
+    saveSiteData(() => {
+      renderAdminPartners();
+    });
+  }
 }
 
 // -------------------------------------------------------------
@@ -293,15 +315,20 @@ function editAd(id) {
 
 function deleteAd(id) {
   if (!confirm('هل أنت تأكد من حذف هذا الإعلان؟')) return;
-  const currentData = typeof siteData !== 'undefined' ? siteData : (window.siteData || {});
+  const targetId = String(id);
+  const currentData = typeof siteData !== 'undefined' ? siteData : (window.siteData || data);
   if (currentData.ads) {
-    currentData.ads = currentData.ads.filter(a => a.id != id && String(a.id) !== String(id));
+    currentData.ads = currentData.ads.filter(a => String(a.id) !== targetId && a.id != id);
     if (typeof siteData !== 'undefined') siteData.ads = currentData.ads;
     if (typeof window !== 'undefined' && window.siteData) window.siteData.ads = currentData.ads;
     if (typeof data !== 'undefined' && data) data.ads = currentData.ads;
   }
-  if (typeof saveSiteData === 'function') saveSiteData();
   renderAdminAds();
+  if (typeof saveSiteData === 'function') {
+    saveSiteData(() => {
+      renderAdminAds();
+    });
+  }
 }
 
 // -------------------------------------------------------------
@@ -395,10 +422,21 @@ function viewMessage(id) {
   const deleteBtn = $('#deleteMsgBtn');
   if (deleteBtn) {
     deleteBtn.onclick = () => {
-      data.messages = data.messages.filter(x => x.id !== Number(id));
-      if (typeof saveSiteData === 'function') saveSiteData();
+      const targetId = String(id);
+      const currentData = typeof siteData !== 'undefined' ? siteData : (window.siteData || data);
+      if (currentData.messages) {
+        currentData.messages = currentData.messages.filter(x => String(x.id) !== targetId && x.id != id);
+        if (typeof siteData !== 'undefined') siteData.messages = currentData.messages;
+        if (typeof window !== 'undefined' && window.siteData) window.siteData.messages = currentData.messages;
+        if (typeof data !== 'undefined' && data) data.messages = currentData.messages;
+      }
       closeModal('#messageModal');
       renderAdminMessages();
+      if (typeof saveSiteData === 'function') {
+        saveSiteData(() => {
+          renderAdminMessages();
+        });
+      }
     };
   }
 
