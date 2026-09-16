@@ -108,11 +108,11 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         } else {
           // If 404 (Netlify static hosting without Node server process)
-          fallbackStaticLogin(username, password);
+          showAlert('تعذر التحقق من بيانات الدخول. حاول مرة أخرى.');
         }
       } catch (err) {
         // Fallback for static Netlify hosting mode
-        fallbackStaticLogin(username, password);
+        showAlert('تعذر الاتصال بخدمة الدخول. حاول مرة أخرى.');
       }
 
       if (submitBtn) {
@@ -122,14 +122,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function fallbackStaticLogin(username, password) {
-    // Default Netlify / Static credentials check
-    if (username === 'admin' && password === 'admin123') {
-      const staticToken = 'admin_token_' + Date.now();
-      const staticUser = { name: 'د. حسام جعفر', role: 'مدير النظام' };
-      doLoginSuccess(staticToken, staticUser);
-    } else {
-      showAlert('اسم المستخدم أو كلمة السر غير صحيحة');
-    }
-  }
 });

@@ -303,10 +303,18 @@ var siteData = {
 
 // Helper Utilities
 // Neon PostgreSQL Cloud DB Configuration for Production Live Sync
-const NEON_CONN_STR = 'postgresql://neondb_owner:npg_k6DNGMlQfR2I@ep-plain-math-b4ex0w37-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require';
-const NEON_SQL_URL = 'https://ep-plain-math-b4ex0w37.c-6.us-east-2.aws.neon.tech/sql';
+// Database access lives in Vercel serverless functions. Never put connection
+// strings or database credentials in this browser-delivered file.
+const SITE_DATA_API = '/api/site-data';
 
 function saveSiteData(callback) {
+  const token = (typeof localStorage !== 'undefined' && localStorage.getItem('adminToken')) || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('adminToken')) || '';
+  if (!token) { if (typeof callback === 'function') callback(false); return Promise.resolve(false); }
+  return fetch(SITE_DATA_API, { method:'PUT', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`}, body:JSON.stringify({payload:siteData}) }).then(response=>{if(!response.ok)throw new Error('Save failed');return response.json();}).then(()=>{if(typeof callback==='function')callback(true);return true;}).catch(error=>{console.error('Site data save error:',error);if(typeof callback==='function')callback(false);return false;});
+}
+
+/* Legacy implementation retained below only for line-history compatibility; it is unreachable. */
+function legacySaveSiteData(callback) {
   const globalWin = typeof window !== 'undefined' ? window : null;
   if (globalWin) globalWin._isSavingApiData = true;
 
@@ -323,11 +331,10 @@ function saveSiteData(callback) {
     const sqlQuery = `INSERT INTO mvc_site_data (id, payload) VALUES (1, '${jsonStr}') ON CONFLICT (id) DO UPDATE SET payload = '${jsonStr}', updated_at = NOW();`;
 
     // 1. Sync to Neon DB (Production Postgres Cloud)
-    fetch(NEON_SQL_URL, {
+    fetch('/api/legacy-disabled', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Neon-Connection-String': NEON_CONN_STR
       },
       body: JSON.stringify({ query: sqlQuery })
     })
@@ -360,7 +367,7 @@ function saveSiteData(callback) {
   }
 }
 
-function loadSiteData(onComplete) {
+function legacyLoadSiteData(onComplete) {
   const globalWin = typeof window !== 'undefined' ? window : null;
 
   // 1. Load from localStorage for instant zero-latency rendering
@@ -380,11 +387,10 @@ function loadSiteData(onComplete) {
   if (typeof fetch !== 'undefined' && globalWin && !globalWin._isFetchingApiData && !globalWin._isSavingApiData) {
     globalWin._isFetchingApiData = true;
 
-    fetch(NEON_SQL_URL, {
+    fetch('/api/legacy-disabled', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Neon-Connection-String': NEON_CONN_STR
       },
       body: JSON.stringify({ query: 'SELECT payload FROM mvc_site_data WHERE id = 1;' })
     })
@@ -427,6 +433,11 @@ function loadSiteData(onComplete) {
         if (globalWin) globalWin._isFetchingApiData = false;
       });
   }
+}
+
+function loadSiteData(onComplete) {
+  if (typeof fetch === 'undefined') return Promise.resolve(siteData);
+  return fetch(SITE_DATA_API,{cache:'no-store'}).then(response=>{if(!response.ok)throw new Error('Load failed');return response.json();}).then(result=>{const payload=result&&result.payload;if(payload&&typeof payload==='object'&&Array.isArray(payload.categories)&&Array.isArray(payload.products)){Object.assign(siteData,payload);window.dispatchEvent(new CustomEvent('sitedataupdated'));}if(typeof onComplete==='function')onComplete(siteData);return siteData;}).catch(error=>{console.warn('Site data load error:',error);if(typeof onComplete==='function')onComplete(siteData);return siteData;});
 }
 loadSiteData();
 
@@ -475,5 +486,4 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { siteData, saveSiteData, loadSiteData, getCategoryBySlug, getProductsByCategory, getProductById, getAdById };
 }
-
 

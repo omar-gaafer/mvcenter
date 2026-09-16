@@ -279,13 +279,9 @@ if ($('#contactForm')) {
       read: false
     };
 
-    const currentData = typeof siteData !== 'undefined' ? siteData : (window.siteData || {});
-    if (!currentData.messages) currentData.messages = [];
-    currentData.messages.unshift(newMsg);
-    if (typeof saveSiteData === 'function') saveSiteData();
-
-    $('#formNote').textContent = 'شكرًا لتواصلك مع المركز البيطري الحديث. تم إرسال استفسارك بنجاح وسيتواصل معك فريق د. حسام جعفر.';
-    e.target.reset();
+    const submitButton = e.target.querySelector('button[type="submit"]');
+    if (submitButton) submitButton.disabled = true;
+    fetch('/api/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(newMsg)}).then(response=>{if(!response.ok)throw new Error('Message failed');return response.json();}).then(()=>{$('#formNote').textContent='شكرًا لتواصلك مع المركز البيطري الحديث. تم إرسال استفسارك بنجاح وسيتواصل معك فريق د. حسام جعفر.';e.target.reset();}).catch(()=>{$('#formNote').textContent='تعذر إرسال الاستفسار الآن. يرجى المحاولة لاحقًا أو التواصل عبر واتساب.';}).finally(()=>{if(submitButton)submitButton.disabled=false;});
   });
 }
 
