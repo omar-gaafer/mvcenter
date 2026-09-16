@@ -302,8 +302,9 @@ var siteData = {
 };
 
 // Helper Utilities
-// Cloud DB API Endpoint for Live Cross-Device Sync (Netlify / Vercel / Mobile / Desktop)
-const CLOUD_SYNC_ENDPOINT = 'https://extendsclass.com/api/json-storage/bin/fecfefe';
+// Neon PostgreSQL Cloud DB Configuration for Production Live Sync
+const NEON_CONN_STR = 'postgresql://neondb_owner:npg_k6DNGMlQfR2I@ep-plain-math-b4ex0w37-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require';
+const NEON_SQL_URL = 'https://ep-plain-math-b4ex0w37.c-6.us-east-2.aws.neon.tech/sql';
 
 function saveSiteData(callback) {
   const globalWin = typeof window !== 'undefined' ? window : null;
@@ -317,47 +318,42 @@ function saveSiteData(callback) {
     }
   }
 
-  // 1. Sync to Local Node Server API (if running server.js)
   if (typeof fetch !== 'undefined') {
+    const jsonStr = JSON.stringify(siteData).replace(/'/g, "''");
+    const sqlQuery = `INSERT INTO mvc_site_data (id, payload) VALUES (1, '${jsonStr}') ON CONFLICT (id) DO UPDATE SET payload = '${jsonStr}', updated_at = NOW();`;
+
+    // 1. Sync to Neon DB (Production Postgres Cloud)
+    fetch(NEON_SQL_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Neon-Connection-String': NEON_CONN_STR
+      },
+      body: JSON.stringify({ query: sqlQuery })
+    })
+    .then(res => res.json())
+    .then(cloudRes => {
+      console.log('Site data & media successfully saved to Neon DB:', cloudRes);
+      if (globalWin) globalWin._isSavingApiData = false;
+      if (typeof callback === 'function') callback(true);
+    })
+    .catch(err => {
+      console.warn('Neon DB sync warning:', err);
+      if (globalWin) globalWin._isSavingApiData = false;
+      if (typeof callback === 'function') callback(true);
+    });
+
+    // 2. Also sync to Local Node Server API if running server.js
     const token = (typeof localStorage !== 'undefined' && localStorage.getItem('adminToken'))
       || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('adminToken')) || '';
-
-    const headers = {
-      'Content-Type': 'application/json',
-      'ngrok-skip-browser-warning': 'true'
-    };
+    const headers = { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
     fetch('/api/save-data', {
       method: 'POST',
       headers: headers,
       body: JSON.stringify(siteData)
-    })
-    .then(res => res.json())
-    .then(data => {
-      console.log('Site data synced to local server:', data);
-    })
-    .catch(() => {});
-
-    // 2. Sync to Global Cloud Storage (Live on Netlify, Vercel & All Mobile/Desktop Devices globally)
-    fetch(CLOUD_SYNC_ENDPOINT, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(siteData)
-    })
-    .then(res => res.json())
-    .then(cloudRes => {
-      console.log('Site data & media successfully synced to Cloud Storage:', cloudRes);
-      if (globalWin) globalWin._isSavingApiData = false;
-      if (typeof callback === 'function') callback(true);
-    })
-    .catch(err => {
-      console.warn('Cloud DB sync warning:', err);
-      if (globalWin) globalWin._isSavingApiData = false;
-      if (typeof callback === 'function') callback(true);
-    });
+    }).catch(() => {});
   } else {
     if (globalWin) globalWin._isSavingApiData = false;
     if (typeof callback === 'function') callback(true);
@@ -367,7 +363,7 @@ function saveSiteData(callback) {
 function loadSiteData(onComplete) {
   const globalWin = typeof window !== 'undefined' ? window : null;
 
-  // 1. Sync load from localStorage first for instant zero-latency rendering
+  // 1. Load from localStorage for instant zero-latency rendering
   if (typeof localStorage !== 'undefined') {
     const saved = localStorage.getItem('mvc_siteData');
     if (saved) {
@@ -380,59 +376,52 @@ function loadSiteData(onComplete) {
     }
   }
 
-  // 2. Async load from Global Cloud DB for live cross-device sync
+  // 2. Async load live state from Neon DB
   if (typeof fetch !== 'undefined' && globalWin && !globalWin._isFetchingApiData && !globalWin._isSavingApiData) {
     globalWin._isFetchingApiData = true;
 
-    // Fetch from Cloud DB
-    fetch(CLOUD_SYNC_ENDPOINT + '?t=' + Date.now(), {
+    fetch(NEON_SQL_URL, {
+      method: 'POST',
       headers: {
-        'Accept': 'application/json'
-      }
+        'Content-Type': 'application/json',
+        'Neon-Connection-String': NEON_CONN_STR
+      },
+      body: JSON.stringify({ query: 'SELECT payload FROM mvc_site_data WHERE id = 1;' })
     })
       .then(res => {
-        if (!res.ok) throw new Error('Cloud DB response not ok');
+        if (!res.ok) throw new Error('Neon DB response not ok');
         return res.json();
       })
-      .then(cloudData => {
-        if (globalWin && globalWin._isSavingApiData) return; // Do not overwrite if currently saving/deleting
-        const payload = (cloudData && cloudData.record) ? cloudData.record : cloudData;
-        if (payload && typeof payload === 'object' && payload.categories && payload.products) {
-          siteData.categories = payload.categories || siteData.categories;
-          siteData.products = payload.products || siteData.products;
-          siteData.ads = payload.ads || siteData.ads;
-          siteData.partners = payload.partners || siteData.partners;
-          siteData.messages = payload.messages || siteData.messages;
-          if (payload.location) siteData.location = payload.location;
-          if (payload.contact) siteData.contact = payload.contact;
+      .then(neonData => {
+        if (globalWin && globalWin._isSavingApiData) return;
+        if (neonData && neonData.rows && neonData.rows[0] && neonData.rows[0].payload) {
+          const payloadRaw = neonData.rows[0].payload;
+          const payload = typeof payloadRaw === 'string' ? JSON.parse(payloadRaw) : payloadRaw;
 
-          if (typeof localStorage !== 'undefined') {
-            try {
-              localStorage.setItem('mvc_siteData', JSON.stringify(siteData));
-            } catch (e) {}
+          if (payload && typeof payload === 'object' && payload.categories && payload.products) {
+            siteData.categories = payload.categories || siteData.categories;
+            siteData.products = payload.products || siteData.products;
+            siteData.ads = payload.ads || siteData.ads;
+            siteData.partners = payload.partners || siteData.partners;
+            siteData.messages = payload.messages || siteData.messages;
+            if (payload.location) siteData.location = payload.location;
+            if (payload.contact) siteData.contact = payload.contact;
+
+            if (typeof localStorage !== 'undefined') {
+              try {
+                localStorage.setItem('mvc_siteData', JSON.stringify(siteData));
+              } catch (e) {}
+            }
+            if (globalWin) {
+              globalWin.dispatchEvent(new CustomEvent('sitedataupdated'));
+            }
+            if (typeof onComplete === 'function') onComplete(siteData);
           }
-          if (globalWin) {
-            globalWin.dispatchEvent(new CustomEvent('sitedataupdated'));
-          }
-          if (typeof onComplete === 'function') onComplete(siteData);
         }
       })
       .catch(err => {
-        // Local server fallback
-        fetch('/api/data?t=' + Date.now(), {
-          headers: { 'Accept': 'application/json' }
-        })
-        .then(res => res.json())
-        .then(serverData => {
-          if (serverData && typeof serverData === 'object' && serverData.categories) {
-            Object.assign(siteData, serverData);
-            if (globalWin) globalWin.dispatchEvent(new CustomEvent('sitedataupdated'));
-            if (typeof onComplete === 'function') onComplete(siteData);
-          }
-        })
-        .catch(() => {
-          if (typeof onComplete === 'function') onComplete(siteData);
-        });
+        console.warn('Neon DB load error, using local fallback:', err);
+        if (typeof onComplete === 'function') onComplete(siteData);
       })
       .finally(() => {
         if (globalWin) globalWin._isFetchingApiData = false;
@@ -441,10 +430,10 @@ function loadSiteData(onComplete) {
 }
 loadSiteData();
 
-// Enable automatic background live polling (every 15 seconds & when tab gets focus)
-if (typeof window !== 'undefined') {
+// Enable automatic background live polling (every 10 seconds & when tab gets focus)
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
   window.addEventListener('focus', function() { loadSiteData(); });
-  setInterval(function() { loadSiteData(); }, 15000);
+  setInterval(function() { loadSiteData(); }, 10000);
 }
 
 function getCategoryBySlug(slugOrTitle) {
