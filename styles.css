@@ -1176,7 +1176,7 @@
   border-color: #EF4444;
 }
 
-/* Header & Footer Developer Credit (OG-CSS Company) & Facebook Contact */
+/* Header & Footer Developer Credit (By. Eng/Omar Gaafer) & Facebook Contact */
 .header-dev-badge {
   font-size: 10px;
   font-weight: 700;
@@ -1189,6 +1189,13 @@
   display: inline-flex;
   align-items: center;
   margin-inline-start: 10px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+.header-dev-badge:hover {
+  background: var(--orange);
+  color: #ffffff;
+  border-color: var(--orange);
 }
 .contact-methods a.fb-method span {
   color: #1877F2;
@@ -1206,8 +1213,15 @@
   color: #a5b9dc !important;
   margin: 3px 0 0 !important;
 }
-.dev-credit b {
+.dev-credit a {
   color: var(--orange);
+  text-decoration: none;
+  font-weight: 700;
+  transition: color 0.2s ease;
+}
+.dev-credit a:hover {
+  color: #ffffff;
+  text-decoration: underline;
 }
 
 
