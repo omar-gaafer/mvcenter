@@ -364,6 +364,8 @@ function renderAdminContactForm() {
   if (phoneIn) phoneIn.value = data.contact.phone || '';
   const waIn = $('#contactWaInput');
   if (waIn) waIn.value = data.contact.whatsapp || '';
+  const fbIn = $('#contactFbInput');
+  if (fbIn) fbIn.value = data.contact.facebook || '';
 
   const form = $('#contactSettingsForm');
   if (form) {
@@ -371,8 +373,9 @@ function renderAdminContactForm() {
       e.preventDefault();
       data.contact.phone = phoneIn.value;
       data.contact.whatsapp = waIn.value.replace(/[^0-9]/g, '');
+      if (fbIn) data.contact.facebook = fbIn.value.trim();
       if (typeof saveSiteData === 'function') saveSiteData();
-      alert('تم تحديث رقم الهاتف والواتساب بنجاح! عند ضغط الزائر على الواتساب بالموقع سيفتح على هذا الرقم فورًا.');
+      alert('تم تحديث أرقام التواصل ورابط صفحة الفيسبوك بنجاح!');
     };
   }
 }

@@ -1176,4 +1176,38 @@
   border-color: #EF4444;
 }
 
+/* Header & Footer Developer Credit (OG-CSS Company) & Facebook Contact */
+.header-dev-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--orange);
+  background: #fff3eb;
+  border: 1px solid #fdd7bd;
+  padding: 4px 10px;
+  border-radius: 99px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  margin-inline-start: 10px;
+}
+.contact-methods a.fb-method span {
+  color: #1877F2;
+  font-family: Arial, sans-serif;
+  font-weight: 800;
+}
+.contact-methods a.fb-method:hover {
+  border-color: #1877F2;
+}
+.footer-meta {
+  text-align: center;
+}
+.dev-credit {
+  font-size: 10px !important;
+  color: #a5b9dc !important;
+  margin: 3px 0 0 !important;
+}
+.dev-credit b {
+  color: var(--orange);
+}
+
 

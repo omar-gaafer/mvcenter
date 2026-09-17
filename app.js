@@ -240,7 +240,7 @@ function renderLocationInfo() {
 }
 renderLocationInfo();
 
-// Render Dynamic Contact Info (Phone & WhatsApp Links)
+// Render Dynamic Contact Info (Phone, WhatsApp & Facebook Links)
 function renderContactInfo() {
   const currentData = typeof siteData !== 'undefined' ? siteData : (window.siteData || {});
   if (currentData.contact) {
@@ -254,6 +254,11 @@ function renderContactInfo() {
     if (waLink) {
       const cleanWa = (currentData.contact.whatsapp || '').replace(/[^0-9]/g, '');
       waLink.href = `https://wa.me/${cleanWa}`;
+    }
+    const fbLink = $('#contactFbLink');
+    if (fbLink) {
+      const fbUrl = currentData.contact.facebook || 'https://facebook.com';
+      fbLink.href = fbUrl;
     }
   }
 }
