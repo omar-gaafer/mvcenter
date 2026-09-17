@@ -338,6 +338,11 @@ function renderAdminLocationForm() {
   const currentData = typeof siteData !== 'undefined' ? siteData : (window.siteData || {});
   if (!currentData.location) return;
 
+  const form = $('#locationForm');
+  if (form && document.activeElement && form.contains(document.activeElement)) {
+    return;
+  }
+
   const locAddr = $('#locationAddressInput');
   if (locAddr) locAddr.value = currentData.location.address || '';
   const locHours = $('#locationHoursInput');
@@ -345,7 +350,6 @@ function renderAdminLocationForm() {
   const locMapUrl = $('#locationMapUrlInput');
   if (locMapUrl) locMapUrl.value = currentData.location.mapUrl || '';
 
-  const form = $('#locationForm');
   if (form) {
     form.onsubmit = (e) => {
       e.preventDefault();
@@ -360,6 +364,12 @@ function renderAdminLocationForm() {
 
 function renderAdminContactForm() {
   if (!data.contact) return;
+  const form = $('#contactSettingsForm');
+
+  if (form && document.activeElement && form.contains(document.activeElement)) {
+    return;
+  }
+
   const phoneIn = $('#contactPhoneInput');
   if (phoneIn) phoneIn.value = data.contact.phone || '';
   const waIn = $('#contactWaInput');
@@ -367,7 +377,6 @@ function renderAdminContactForm() {
   const fbIn = $('#contactFbInput');
   if (fbIn) fbIn.value = data.contact.facebook || '';
 
-  const form = $('#contactSettingsForm');
   if (form) {
     form.onsubmit = (e) => {
       e.preventDefault();
