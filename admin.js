@@ -812,6 +812,8 @@ function setupSidebarNavigation() {
   const menuBtn = $('#adminMenuBtn');
   const sidebar = $('#adminSidebar');
   const backdrop = $('#adminSidebarBackdrop');
+  const navLinks = document.querySelectorAll('.admin-nav a');
+  const sections = document.querySelectorAll('.admin-panel');
 
   function closeMobileSidebar() {
     if (sidebar) sidebar.classList.remove('sidebar-open');
@@ -832,12 +834,54 @@ function setupSidebarNavigation() {
   if (menuBtn) menuBtn.onclick = toggleMobileSidebar;
   if (backdrop) backdrop.onclick = closeMobileSidebar;
 
-  // Auto-close sidebar on mobile when navigating links
-  document.querySelectorAll('.admin-nav a').forEach(a => {
+  function updateActiveNav(targetHash) {
+    const currentHash = targetHash || window.location.hash || '#products-admin';
+    navLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href === currentHash || (!window.location.hash && href === '#products-admin')) {
+        link.classList.add('selected');
+      } else {
+        link.classList.remove('selected');
+      }
+    });
+  }
+
+  // Auto-close sidebar on mobile & update highlight box on link click
+  navLinks.forEach(a => {
     a.addEventListener('click', () => {
+      const targetHash = a.getAttribute('href');
+      updateActiveNav(targetHash);
       closeMobileSidebar();
     });
   });
+
+  // Listen to window hash changes
+  window.addEventListener('hashchange', () => {
+    updateActiveNav();
+  });
+
+  // Track active section on scroll via IntersectionObserver
+  if ('IntersectionObserver' in window && sections.length > 0) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('id');
+          if (id) {
+            updateActiveNav('#' + id);
+          }
+        }
+      });
+    }, {
+      root: null,
+      rootMargin: '-20% 0px -50% 0px',
+      threshold: 0
+    });
+
+    sections.forEach(section => observer.observe(section));
+  }
+
+  // Initial highlight setup
+  updateActiveNav();
 
   // Date
   const dateEl = $('#currentAdminDate');
