@@ -283,17 +283,17 @@ var siteData = {
     { id: 6, name: 'إنترسفيل (Intervet)', logo: '🛡', type: 'رعاية حيوانية' }
   ],
   location: {
-    title: 'عنوان المركز البيطري الحديث',
-    address: 'الشارع الرئيسي، بجوار الصيدلية المركزية، مصر',
+    title: 'عنوان المركز البيطري الحديث بالسنطة',
+    address: 'السنطة، الشارع الرئيسي (بجوار الصيدلية المركزية)، محافظة الغربية، مصر',
     hours: 'يوميًا من 9:00 صباحًا حتى 10:00 مساءً',
     mapUrl: 'https://maps.google.com',
-    mapNotes: 'موقع وتوجيهات خريطة Google'
+    mapNotes: 'موقع وتوجيهات خريطة Google بالسنطة'
   },
   contact: {
     phone: '+201000000000',
     whatsapp: '201000000000',
     email: 'contact@mvc-vet.com',
-    facebook: 'https://facebook.com'
+    facebook: 'https://www.facebook.com/profile.php?id=61594079684250'
   },
   messages: [
     { id: 1, name: 'محمد السيد', phone: '01012345678', subject: 'استفسار عن لقاحات الدواجن', message: 'السلام عليكم، هل متوفر لقاح الجمبورو لدفعة دجاج تسمين عمر 14 يوم؟', date: 'منذ 10 دقائق', read: false },
