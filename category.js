@@ -60,7 +60,7 @@ function renderCategoryPage() {
       <div class="product-image">
         <span>${p.category}</span>
         ${p.image && (p.image.startsWith('http') || p.image.startsWith('data:'))
-          ? `<img src="${p.image}" alt="${p.name}" style="width:100%; height:100%; object-fit:contain; background:#ffffff; padding:6px;" />`
+          ? `<img src="${p.image}" alt="${p.name}" style="width:100%; height:100%; object-fit:cover;" />`
           : p.icon}
       </div>
       <div class="product-body">
