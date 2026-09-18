@@ -185,6 +185,19 @@ if (adGrid) {
       showAdDetails(e.target.closest('.ad').dataset.adId);
     }
   });
+
+  const adScrollPrev = $('#adScrollPrev');
+  const adScrollNext = $('#adScrollNext');
+  if (adScrollPrev) {
+    adScrollPrev.addEventListener('click', () => {
+      adGrid.scrollBy({ left: 340, behavior: 'smooth' });
+    });
+  }
+  if (adScrollNext) {
+    adScrollNext.addEventListener('click', () => {
+      adGrid.scrollBy({ left: -340, behavior: 'smooth' });
+    });
+  }
 }
 
 if ($('.ad-dialog-close')) {
