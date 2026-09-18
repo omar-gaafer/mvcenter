@@ -26,7 +26,7 @@ function renderCategoryCards() {
 
   productGrid.innerHTML = filteredCategories.map(c => `
     <a href="category.html?cat=${encodeURIComponent(c.slug)}" class="category-type-card" aria-label="عرض منتجات ${c.title}">
-      <div class="category-type-header" style="${c.image && (c.image.startsWith('http') || c.image.startsWith('data:')) ? `background-image: url('${c.image}'); background-size: cover; background-position: center;` : ''}">
+      <div class="category-type-header" style="${c.image && (c.image.startsWith('http') || c.image.startsWith('data:')) ? `background-image: url('${c.image}'); background-size: contain; background-repeat: no-repeat; background-position: center; background-color: #ffffff;` : ''}">
         <span class="category-type-badge">${c.badge || c.title}</span>
         <span class="category-type-icon">${c.icon}</span>
       </div>
@@ -156,7 +156,7 @@ function renderAds() {
   adGrid.innerHTML = currentData.ads.map(a => `
     <article class="ad ${a.featured ? 'featured' : ''}" data-ad-id="${a.id}" tabindex="0" role="button" aria-label="عرض تفاصيل ${a.title}">
       ${a.image && (a.image.startsWith('http') || a.image.startsWith('data:'))
-        ? `<div class="ad-card-cover" style="height:120px; background-image:url('${a.image}'); background-size:cover; background-position:center; border-radius:12px 12px 0 0; margin:-22px -22px 16px;"></div>`
+        ? `<div class="ad-card-cover" style="height:180px; background-image:url('${a.image}'); background-size:contain; background-repeat:no-repeat; background-position:center; background-color:#ffffff; border-radius:12px 12px 0 0; margin:-22px -22px 16px; border-bottom:1px solid #dce4f0;"></div>`
         : ''}
       <div>
         <small>${a.tag || a.date}</small>
