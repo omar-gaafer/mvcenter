@@ -112,15 +112,14 @@ if ($('.dialog-close')) {
 }
 
 // Ads Rendering & Modal Popup
-const updatesGrid = $('#updatesGrid');
-const updateDialog = $('#updateDialog');
+const adGrid = $('#adGrid');
+const adDialog = $('#adDialog');
 
 function showAdDetails(id) {
-  const currentData = typeof siteData !== 'undefined' ? siteData : (window.siteData || {});
-  const adsData = currentData.ads || (typeof data !== 'undefined' && data ? data.ads : []);
-  const a = typeof getAdById === 'function' ? getAdById(id) : (adsData ? adsData.find(x => x.id === Number(id) || x.id == id) : null);
-  if (!a || !updateDialog) return;
+  const a = typeof getAdById === 'function' ? getAdById(id) : (data.ads ? data.ads.find(x => x.id === Number(id)) : null);
+  if (!a || !adDialog) return;
 
+  const currentData = typeof siteData !== 'undefined' ? siteData : (window.siteData || {});
   const waNum = (currentData.contact && currentData.contact.whatsapp) ? currentData.contact.whatsapp : '201000000000';
   const waMessage = encodeURIComponent(`السلام عليكم، استفسار بخصوص إعلان: ${a.title}`);
   const waUrl = `https://wa.me/${waNum}?text=${waMessage}`;
@@ -129,85 +128,81 @@ function showAdDetails(id) {
     ? `<div class="quick-info-box"><h3>أبرز النقاط والمزايا:</h3><ul>${a.highlights.map(h => `<li>${h}</li>`).join('')}</ul></div>`
     : '';
 
-  const dialogContent = $('#updateDialogContent');
-  if (dialogContent) {
-    dialogContent.innerHTML = `
-      <div class="update-dialog-banner">
-        <span class="update-dialog-icon">${a.icon || '📢'}</span>
-        <span class="category-badge">${a.tag || a.date}</span>
-      </div>
-      <h2>${a.title}</h2>
-      <p class="update-dialog-desc">${a.fullDetails || a.text}</p>
-      
-      ${a.promoPhrase ? `<div class="update-promo-box"><p>${a.promoPhrase}</p></div>` : ''}
-      ${highlightsHTML}
+  $('#adDialogContent').innerHTML = `
+    <div class="ad-dialog-banner">
+      <span class="ad-dialog-icon">${a.icon || '📢'}</span>
+      <span class="category-badge">${a.tag || a.date}</span>
+    </div>
+    <h2>${a.title}</h2>
+    <p class="ad-dialog-desc">${a.fullDetails || a.text}</p>
+    
+    ${a.promoPhrase ? `<div class="ad-promo-box"><p>${a.promoPhrase}</p></div>` : ''}
+    ${highlightsHTML}
 
-      <div class="dialog-actions">
-        <a class="button primary wa-button" href="${waUrl}" target="_blank" rel="noopener">
-          <span>◉</span> تواصل معنا للاستفسار
-        </a>
-        <button class="button secondary" onclick="if(document.querySelector('#updateDialog'))document.querySelector('#updateDialog').close();">
-          إغلاق
-        </button>
-      </div>
-    `;
-  }
-  updateDialog.showModal();
+    <div class="dialog-actions">
+      <a class="button primary wa-button" href="${waUrl}" target="_blank" rel="noopener">
+        <span>◉</span> تواصل معنا للاستفسار
+      </a>
+      <button class="button secondary" onclick="if(document.querySelector('#adDialog'))document.querySelector('#adDialog').close();">
+        إغلاق
+      </button>
+    </div>
+  `;
+  adDialog.showModal();
 }
 
 function renderAds() {
   const currentData = typeof siteData !== 'undefined' ? siteData : (window.siteData || {});
-  const adsData = currentData.ads || (typeof data !== 'undefined' && data ? data.ads : []);
-  if (!updatesGrid || !adsData) return;
+  if (!adGrid || !currentData.ads) return;
 
-  updatesGrid.innerHTML = adsData.map(a => `
-    <article class="update-card ${a.featured ? 'featured' : ''}" data-ad-id="${a.id}" tabindex="0" role="button" aria-label="عرض تفاصيل ${a.title}">
+  adGrid.innerHTML = currentData.ads.map(a => `
+    <article class="ad ${a.featured ? 'featured' : ''}" data-ad-id="${a.id}" tabindex="0" role="button" aria-label="عرض تفاصيل ${a.title}">
       ${a.image && (a.image.startsWith('http') || a.image.startsWith('data:'))
-        ? `<div class="update-card-cover" style="height:150px; background-image:url('${a.image}'); background-size:cover; background-position:center; border-radius:12px 12px 0 0; margin:-22px -22px 16px;"></div>`
+        ? `<div class="ad-card-cover" style="height:150px; background-image:url('${a.image}'); background-size:cover; background-position:center; border-radius:12px 12px 0 0; margin:-22px -22px 16px;"></div>`
         : ''}
       <div>
         <small>${a.tag || a.date}</small>
         <h3>${a.title}</h3>
         <p>${a.text}</p>
       </div>
-      <span class="update-read-more">اعرف المزيد ←</span>
+      <span class="ad-read-more">اعرف المزيد ←</span>
     </article>
   `).join('');
 }
 
-if (updatesGrid) {
+if (adGrid) {
   renderAds();
 
-  updatesGrid.addEventListener('click', e => {
-    const card = e.target.closest('.update-card');
+  adGrid.addEventListener('click', e => {
+    const card = e.target.closest('.ad');
     if (card && card.dataset.adId) {
       showAdDetails(card.dataset.adId);
     }
   });
 
-  updatesGrid.addEventListener('keydown', e => {
-    if ((e.key === 'Enter' || e.key === ' ') && e.target.closest('.update-card')) {
-      showAdDetails(e.target.closest('.update-card').dataset.adId);
+  adGrid.addEventListener('keydown', e => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.closest('.ad')) {
+      showAdDetails(e.target.closest('.ad').dataset.adId);
     }
   });
 
-  const updateScrollPrev = $('#updateScrollPrev');
-  const updateScrollNext = $('#updateScrollNext');
-  if (updateScrollPrev) {
-    updateScrollPrev.addEventListener('click', () => {
-      updatesGrid.scrollBy({ left: 340, behavior: 'smooth' });
+  const adScrollPrev = $('#adScrollPrev');
+  const adScrollNext = $('#adScrollNext');
+  if (adScrollPrev) {
+    adScrollPrev.addEventListener('click', () => {
+      adGrid.scrollBy({ left: 340, behavior: 'smooth' });
     });
   }
-  if (updateScrollNext) {
-    updateScrollNext.addEventListener('click', () => {
-      updatesGrid.scrollBy({ left: -340, behavior: 'smooth' });
+  if (adScrollNext) {
+    adScrollNext.addEventListener('click', () => {
+      adGrid.scrollBy({ left: -340, behavior: 'smooth' });
     });
   }
 }
 
-if ($('.update-dialog-close')) {
-  $('.update-dialog-close').addEventListener('click', () => {
-    if (updateDialog) updateDialog.close();
+if ($('.ad-dialog-close')) {
+  $('.ad-dialog-close').addEventListener('click', () => {
+    if (adDialog) adDialog.close();
   });
 }
 
