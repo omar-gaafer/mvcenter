@@ -184,7 +184,7 @@ const server = http.createServer((req, res) => {
       });
     } else {
       try {
-        const dataModule = require('./data.js');
+        const dataModule = require('./js/data.js');
         const initialData = JSON.stringify(dataModule.siteData, null, 2);
         fs.writeFileSync(jsonPath, initialData, 'utf-8');
         setCorsHeaders(res);
