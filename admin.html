@@ -152,6 +152,7 @@
             <table>
               <thead>
                 <tr>
+                  <th>الترتيب</th>
                   <th>عنوان الإعلان</th>
                   <th>التصنيف</th>
                   <th>صورة الكارت الرئيسي</th>
@@ -359,8 +360,12 @@
         <label>العبارة الترويجية المميزة (Pop-Up)
           <input id="adPromoPhraseInput" placeholder="مثال: ✦ استشارة بيطرية مجانية لدعم مزرعتك!" />
         </label>
+        <label>أبرز النقاط والمزايا (ضع كل نقطة في سطر منفصل)
+          <textarea id="adHighlightsInput" rows="3" placeholder="أدخل كل نقطة في سطر منفصل&#10;مثال:&#10;متابعة بيطرية متخصصة&#10;دعم مستمر للمزارع والمربين"></textarea>
+          <small style="display:block; color:var(--muted); font-size:11px; margin-top:3px;">اكتب كل ميزة أو نقطة في سطر جديد ليتم عرضها في الـ Pop-Up بشكل متناسق.</small>
+        </label>
         <label>
-          <input type="checkbox" id="adFeaturedInput" /> تمييز الإعلان بخلفية مشمشية مميزة
+          <input type="checkbox" id="adFeaturedInput" /> تمييز الإعلان بخلفية مميزة
         </label>
         <button type="button" class="button primary modal-save" id="saveAdBtn" onclick="saveAdData()">حفظ الإعلان للموقع</button>
       </div>

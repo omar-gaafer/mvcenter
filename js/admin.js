@@ -266,8 +266,14 @@ function renderAdminAds() {
   const tbody = $('#adminAdTable');
   if (!tbody || !currentData.ads) return;
 
-  tbody.innerHTML = currentData.ads.map(a => `
+  tbody.innerHTML = currentData.ads.map((a, index) => `
     <tr>
+      <td>
+        <div style="display:flex; gap:4px; align-items:center;">
+          <button class="button secondary" style="padding:4px 8px; font-size:12px;" onclick="moveAd(${index}, -1)" ${index === 0 ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''} title="تحريك لأعلى">▲</button>
+          <button class="button secondary" style="padding:4px 8px; font-size:12px;" onclick="moveAd(${index}, 1)" ${index === currentData.ads.length - 1 ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''} title="تحريك لأسفل">▼</button>
+        </div>
+      </td>
       <td><b>${a.title}</b></td>
       <td><span class="category-badge">${a.tag || a.date}</span></td>
       <td>
@@ -282,6 +288,24 @@ function renderAdminAds() {
       </td>
     </tr>
   `).join('');
+}
+
+function moveAd(index, direction) {
+  const currentData = typeof siteData !== 'undefined' ? siteData : (window.siteData || {});
+  if (!currentData.ads || index < 0 || index >= currentData.ads.length) return;
+  const targetIndex = index + direction;
+  if (targetIndex < 0 || targetIndex >= currentData.ads.length) return;
+
+  const temp = currentData.ads[index];
+  currentData.ads[index] = currentData.ads[targetIndex];
+  currentData.ads[targetIndex] = temp;
+
+  if (typeof siteData !== 'undefined') siteData.ads = currentData.ads;
+  if (typeof window !== 'undefined') window.siteData = siteData;
+  if (typeof data !== 'undefined' && data) data.ads = currentData.ads;
+
+  renderAdminAds();
+  if (typeof saveSiteData === 'function') saveSiteData();
 }
 
 function editAd(id) {
@@ -307,6 +331,7 @@ function editAd(id) {
   $('#adTextInput').value = a.text || '';
   $('#adFullDetailsInput').value = a.fullDetails || '';
   $('#adPromoPhraseInput').value = a.promoPhrase || '';
+  if ($('#adHighlightsInput')) $('#adHighlightsInput').value = (a.highlights && Array.isArray(a.highlights)) ? a.highlights.join('\n') : '';
   if ($('#adFeaturedInput')) $('#adFeaturedInput').checked = !!a.featured;
 
   if ($('#adModalTitle')) $('#adModalTitle').textContent = 'تعديل الإعلان والـ Pop-Up';
@@ -657,6 +682,7 @@ function openAdModalForNew() {
   $('#adTextInput').value = '';
   $('#adFullDetailsInput').value = '';
   $('#adPromoPhraseInput').value = '';
+  if ($('#adHighlightsInput')) $('#adHighlightsInput').value = '';
   if ($('#adFeaturedInput')) $('#adFeaturedInput').checked = false;
   if ($('#adModalTitle')) $('#adModalTitle').textContent = 'إضافة إعلان جديد';
   openModal('#adModal');
@@ -673,6 +699,8 @@ function saveAdData() {
   const text = ($('#adTextInput') && $('#adTextInput').value) ? $('#adTextInput').value.trim() : '';
   const fullDetails = ($('#adFullDetailsInput') && $('#adFullDetailsInput').value) ? $('#adFullDetailsInput').value.trim() : '';
   const promoPhrase = ($('#adPromoPhraseInput') && $('#adPromoPhraseInput').value) ? $('#adPromoPhraseInput').value.trim() : '';
+  const rawHighlights = ($('#adHighlightsInput') && $('#adHighlightsInput').value) ? $('#adHighlightsInput').value : '';
+  const highlights = rawHighlights ? rawHighlights.split('\n').map(s => s.trim()).filter(Boolean) : [];
   const featured = $('#adFeaturedInput') ? $('#adFeaturedInput').checked : false;
 
   if (!title) { alert('يرجى إدخال عنوان الإعلان'); return; }
@@ -687,6 +715,7 @@ function saveAdData() {
       a.text = text;
       a.fullDetails = fullDetails;
       a.promoPhrase = promoPhrase;
+      a.highlights = highlights;
       a.featured = featured;
     }
   } else {
@@ -701,7 +730,7 @@ function saveAdData() {
       fullDetails,
       promoPhrase,
       featured,
-      highlights: ['متابعة بيطرية متخصصة', 'دعم مستمر للمزارع والمربين']
+      highlights: highlights.length > 0 ? highlights : ['متابعة بيطرية متخصصة', 'دعم مستمر للمزارع والمربين']
     });
   }
 
