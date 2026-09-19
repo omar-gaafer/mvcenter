@@ -442,11 +442,12 @@ function loadSiteData(onComplete) {
 }
 loadSiteData();
 
-// Enable automatic background live polling (every 10 seconds & when tab gets focus)
+// Enable automatic background live polling (every 60 seconds & when tab gets focus)
 if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
   window.addEventListener('focus', function() { loadSiteData(); });
-  setInterval(function() { loadSiteData(); }, 10000);
+  setInterval(function() { loadSiteData(); }, 60000);
 }
+
 
 function getCategoryBySlug(slugOrTitle) {
   if (!slugOrTitle) return null;
