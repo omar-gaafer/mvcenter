@@ -246,11 +246,15 @@ function renderLocationInfo() {
     const locHours = $('#locationHours');
     if (locHours && currentData.location.hours) locHours.textContent = currentData.location.hours;
 
-    const mapUrl = currentData.location.mapUrl || 'https://maps.google.com';
+    const defaultMapUrl = 'https://www.google.com/maps/place/%D8%A7%D9%84%D9%85%D8%B1%D9%83%D8%B2+%D8%A7%D9%84%D8%A8%D9%8A%D8%B7%D8%B1%D9%8A+%D8%A7%D9%84%D8%AD%D8%AF%D9%8A%D8%AB+%D8%A8%D8%A7%D9%84%D8%B3%D9%86%D8%B7%D8%A9%E2%80%AD/@30.7282547,31.1148443,17z/data=!4m14!1m7!3m6!1s0x14f7c56df9ddceab:0xeef2fa61f7a8f3d!2z2KfZhNmF2LHZg9iyINin2YTYqNmK2LfYsdmKINin2YTYrdiv2YrYqyDYqNin2YTYs9mG2LfYqQ!8m2!3d30.7282547!4d31.1148443!16s%2Fg%2F11zys2km5n!3m5!1s0x14f7c56df9ddceab:0xeef2fa61f7a8f3d!8m2!3d30.7282547!4d31.1148443!16s%2Fg%2F11zys2km5n?hl=ar&entry=ttu&g_ep=EgoyMDI2MDkxNS4wIKXMDSoASAFQAw%3D%3D';
+    const mapUrl = (currentData.location.mapUrl && currentData.location.mapUrl !== 'https://maps.google.com') ? currentData.location.mapUrl : defaultMapUrl;
+
     const mapCard = $('#locationMapCardLink');
     if (mapCard) mapCard.href = mapUrl;
     const mapDirLink = $('#locationDirectionsLink');
     if (mapDirLink) mapDirLink.href = mapUrl;
+    const mapDirectBtn = $('.map-direct-btn');
+    if (mapDirectBtn) mapDirectBtn.href = mapUrl;
   }
 }
 renderLocationInfo();
