@@ -1224,4 +1224,46 @@
   text-decoration: underline;
 }
 
+/* Phone Input Country Code Badge Styling */
+.phone-input-wrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid #dce4f0;
+  border-radius: 7px;
+  background: #ffffff;
+  margin-top: 4px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.phone-input-wrap:focus-within {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px rgba(242, 132, 47, 0.15);
+}
+.phone-country-code {
+  background: #f0f4fa;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 11px;
+  padding: 10px 12px;
+  border-left: 1px solid #dce4f0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  user-select: none;
+  direction: ltr;
+  white-space: nowrap;
+}
+.phone-input-wrap input {
+  border: none !important;
+  margin-top: 0 !important;
+  border-radius: 0 !important;
+  flex-grow: 1;
+  direction: ltr;
+  text-align: right;
+}
+.phone-input-wrap input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 

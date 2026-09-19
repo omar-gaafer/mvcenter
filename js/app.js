@@ -283,13 +283,27 @@ function renderContactInfo() {
 }
 renderContactInfo();
 
+// Phone Input Live Formatting (+20 Country Code)
+const contactPhoneInp = $('#contactPhoneInput');
+if (contactPhoneInp) {
+  contactPhoneInp.addEventListener('input', e => {
+    let val = e.target.value.replace(/[^0-9]/g, '');
+    if (val.startsWith('0')) {
+      val = val.substring(1);
+    }
+    e.target.value = val;
+  });
+}
+
 // Contact Form Handler with Admin Notification Sync
 if ($('#contactForm')) {
   $('#contactForm').addEventListener('submit', e => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const name = formData.get('name') || 'زائر';
-    const phone = formData.get('phone') || '';
+    let rawPhone = (formData.get('phone') || '').trim().replace(/[^0-9+]/g, '');
+    if (rawPhone.startsWith('0')) rawPhone = rawPhone.substring(1);
+    const phone = rawPhone.startsWith('+') ? rawPhone : (`+20${rawPhone}`);
     const subject = formData.get('subject') || 'استفسار جديد';
     const message = formData.get('message') || '';
 
