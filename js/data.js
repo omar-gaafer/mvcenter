@@ -76,7 +76,7 @@ var siteData = {
 };
 
 // Helper Utilities
-// Neon PostgreSQL Cloud DB Configuration for Production Live Sync
+// Supabase PostgreSQL Cloud DB Configuration for Production Live Sync
 // Database access lives in Vercel serverless functions. Never put connection
 // strings or database credentials in this browser-delivered file.
 const SITE_DATA_API = '/api/site-data';
