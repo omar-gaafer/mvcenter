@@ -91,7 +91,10 @@ function showProduct(id) {
       </a>
     </div>
   `;
-  dialog.showModal();
+  if (dialog) {
+    dialog.scrollTop = 0;
+    dialog.showModal();
+  }
 }
 
 if (productGrid) {
@@ -161,12 +164,22 @@ function showAdDetails(id) {
       </div>
     </div>
   `;
+  adDialog.scrollTop = 0;
   adDialog.showModal();
 }
 
 function renderAds() {
   const currentData = typeof siteData !== 'undefined' ? siteData : (window.siteData || {});
   if (!adGrid || !currentData.ads) return;
+
+  if (currentData.ads.length === 0) {
+    adGrid.innerHTML = `
+      <div style="width:100%; text-align:center; padding:30px 15px; color:var(--muted); font-size:13px; background:#ffffff; border-radius:12px; border:1px solid #e2e8f0;">
+        <span style="font-size:24px; display:block; margin-bottom:6px;">📢</span>
+        لا توجد إعلانات أو تنبيهات بيطرية حاليًا.
+      </div>`;
+    return;
+  }
 
   adGrid.innerHTML = currentData.ads.map(a => `
     <article class="ad ${a.featured ? 'featured' : ''}" data-ad-id="${a.id}" tabindex="0" role="button" aria-label="عرض تفاصيل ${a.title}">
@@ -219,21 +232,46 @@ if ($('.ad-dialog-close')) {
   });
 }
 
+// Close dialogs when clicking on backdrop
+[dialog, adDialog].forEach(d => {
+  if (d) {
+    d.addEventListener('click', (e) => {
+      const rect = d.getBoundingClientRect();
+      const isInDialog = (
+        rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
+        rect.left <= e.clientX && e.clientX <= rect.left + rect.width
+      );
+      if (!isInDialog) {
+        d.close();
+      }
+    });
+  }
+});
+
 // Partners Companies Rendering
 function renderPartners() {
   const currentData = typeof siteData !== 'undefined' ? siteData : (window.siteData || {});
   const partnerGrid = $('#partnerGrid');
-  if (partnerGrid && currentData.partners) {
-    partnerGrid.innerHTML = currentData.partners.map(p => `
-      <div class="partner-company-card">
-        <span class="partner-company-logo">${p.logo && (p.logo.length > 5 || p.logo.startsWith('http') || p.logo.startsWith('data:')) ? `<img src="${p.logo}" alt="${p.name}" />` : (p.logo || '🏢')}</span>
-        <div class="partner-company-info">
-          <b>${p.name}</b>
-          <small>${p.type || 'شركة شريكة'}</small>
-        </div>
-      </div>
-    `).join('');
+  if (!partnerGrid || !currentData.partners) return;
+
+  if (currentData.partners.length === 0) {
+    partnerGrid.innerHTML = `
+      <div style="grid-column:1/-1; width:100%; text-align:center; padding:30px 15px; color:#d5e1f5; font-size:13px; background:rgba(255,255,255,0.05); border-radius:12px; border:1px solid #435e99;">
+        <span style="font-size:24px; display:block; margin-bottom:6px;">🏢</span>
+        لا توجد شركات أو شركاء مضافين حالياً.
+      </div>`;
+    return;
   }
+
+  partnerGrid.innerHTML = currentData.partners.map(p => `
+    <div class="partner-company-card">
+      <span class="partner-company-logo">${p.logo && (p.logo.length > 5 || p.logo.startsWith('http') || p.logo.startsWith('data:')) ? `<img src="${p.logo}" alt="${p.name}" />` : (p.logo || '🏢')}</span>
+      <div class="partner-company-info">
+        <b>${p.name}</b>
+        <small>${p.type || 'شركة شريكة'}</small>
+      </div>
+    </div>
+  `).join('');
 }
 renderPartners();
 

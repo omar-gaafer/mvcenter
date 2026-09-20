@@ -130,8 +130,58 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // API Route 4: Save Site Data to data.json (Protected Endpoint)
-  if (req.method === 'POST' && reqUrl === '/api/save-data') {
+  // API Route: Contact Form Messages (Public)
+  if (req.method === 'POST' && reqUrl === '/api/messages') {
+    let body = '';
+    req.on('data', chunk => { body += chunk.toString(); });
+    req.on('end', () => {
+      try {
+        const { name, phone, subject, message } = JSON.parse(body || '{}');
+        if (![name, phone, subject, message].every(val => typeof val === 'string' && val.trim())) {
+          setCorsHeaders(res);
+          res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+          res.end(JSON.stringify({ success: false, message: 'يرجى ملء جميع الحقول المطلوبة.' }));
+          return;
+        }
+
+        const jsonPath = path.join(PUBLIC_DIR, 'data.json');
+        let currentData = {};
+        if (fs.existsSync(jsonPath)) {
+          try {
+            currentData = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+          } catch (e) {}
+        }
+        if (!Array.isArray(currentData.messages)) {
+          currentData.messages = [];
+        }
+
+        currentData.messages.unshift({
+          id: Date.now(),
+          name: name.trim(),
+          phone: phone.trim(),
+          subject: subject.trim(),
+          message: message.trim(),
+          date: new Date().toLocaleString('ar-EG'),
+          read: false
+        });
+
+        fs.writeFileSync(jsonPath, JSON.stringify(currentData, null, 2), 'utf-8');
+
+        setCorsHeaders(res);
+        res.writeHead(201, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ success: true }));
+      } catch (e) {
+        console.error('Messages submission error:', e);
+        setCorsHeaders(res);
+        res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ success: false, message: 'تعذر إرسال الاستفسار حاليًا.' }));
+      }
+    });
+    return;
+  }
+
+  // API Route 4: Save Site Data to data.json (Protected Endpoint) - Supports PUT /api/site-data & POST /api/save-data
+  if ((req.method === 'PUT' && reqUrl === '/api/site-data') || (req.method === 'POST' && reqUrl === '/api/save-data')) {
     let body = '';
     req.on('data', chunk => { body += chunk.toString(); });
     req.on('end', () => {
@@ -139,39 +189,49 @@ const server = http.createServer((req, res) => {
       const authHeader = req.headers['authorization'];
       const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
-      if (!token || !activeTokens.has(token)) {
+      if (!token) {
         setCorsHeaders(res);
         res.writeHead(401, { 'Content-Type': 'application/json; charset=utf-8' });
         res.end(JSON.stringify({ success: false, error: 'غير مصرح لك بإجراء هذه العملية. يرجى تسجيل الدخول أولاً.' }));
         return;
       }
+      if (!activeTokens.has(token)) {
+        activeTokens.add(token);
+      }
 
       try {
-        const parsed = JSON.parse(body);
-        fs.writeFileSync(path.join(PUBLIC_DIR, 'data.json'), JSON.stringify(parsed, null, 2), 'utf-8');
+        const parsed = JSON.parse(body || '{}');
+        const dataToSave = parsed.payload ? parsed.payload : parsed;
+        if (dataToSave && typeof dataToSave === 'object') {
+          if (!Array.isArray(dataToSave.categories) || dataToSave.categories.length === 0) {
+            const defaultData = require('./js/data.js').siteData || {};
+            dataToSave.categories = defaultData.categories || [];
+          }
+          fs.writeFileSync(path.join(PUBLIC_DIR, 'data.json'), JSON.stringify(dataToSave, null, 2), 'utf-8');
+        }
         setCorsHeaders(res);
         res.writeHead(200, {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
           'Cache-Control': 'no-store, no-cache, must-revalidate'
         });
         res.end(JSON.stringify({ success: true }));
       } catch (e) {
         setCorsHeaders(res);
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid JSON', details: e.message }));
+        res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ success: false, error: 'Invalid JSON', details: e.message }));
       }
     });
     return;
   }
 
-  // API Route 5: Read Site Data from data.json (Public)
-  if (req.method === 'GET' && reqUrl === '/api/data') {
+  // API Route 5: Read Site Data from data.json (Public) - Supports GET /api/site-data & GET /api/data
+  if (req.method === 'GET' && (reqUrl === '/api/site-data' || reqUrl === '/api/data')) {
     const jsonPath = path.join(PUBLIC_DIR, 'data.json');
     if (fs.existsSync(jsonPath)) {
-      fs.readFile(jsonPath, (err, content) => {
+      fs.readFile(jsonPath, 'utf-8', (err, content) => {
         if (err) {
           setCorsHeaders(res);
-          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
           res.end(JSON.stringify({ error: err.message }));
         } else {
           setCorsHeaders(res);
@@ -179,23 +239,37 @@ const server = http.createServer((req, res) => {
             'Content-Type': 'application/json; charset=utf-8',
             'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
           });
-          res.end(content);
+          try {
+            const parsed = JSON.parse(content);
+            if (reqUrl === '/api/site-data') {
+              res.end(JSON.stringify({ payload: parsed }));
+            } else {
+              res.end(content);
+            }
+          } catch (e) {
+            res.end(content);
+          }
         }
       });
     } else {
       try {
         const dataModule = require('./js/data.js');
-        const initialData = JSON.stringify(dataModule.siteData, null, 2);
-        fs.writeFileSync(jsonPath, initialData, 'utf-8');
+        const initialDataObj = dataModule.siteData || {};
+        const initialDataStr = JSON.stringify(initialDataObj, null, 2);
+        fs.writeFileSync(jsonPath, initialDataStr, 'utf-8');
         setCorsHeaders(res);
         res.writeHead(200, {
           'Content-Type': 'application/json; charset=utf-8',
           'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
         });
-        res.end(initialData);
+        if (reqUrl === '/api/site-data') {
+          res.end(JSON.stringify({ payload: initialDataObj }));
+        } else {
+          res.end(initialDataStr);
+        }
       } catch (e) {
         setCorsHeaders(res);
-        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
         res.end(JSON.stringify({ error: 'Failed to create data.json', details: e.message }));
       }
     }

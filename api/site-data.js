@@ -24,8 +24,17 @@ module.exports = async (req, res) => {
     if (req.method === 'PUT') {
       if (!requireAdmin(req, res)) return;
       const payload = req.body && req.body.payload;
-      if (!payload || typeof payload !== 'object' || !Array.isArray(payload.categories) || !Array.isArray(payload.products)) {
+      if (!payload || typeof payload !== 'object' || !Array.isArray(payload.products)) {
         return res.status(400).json({ success: false, message: 'بيانات الموقع غير صالحة.' });
+      }
+      if (!Array.isArray(payload.categories) || payload.categories.length === 0) {
+        try {
+          const localDataPath = path.join(__dirname, '..', 'data.json');
+          if (fs.existsSync(localDataPath)) {
+            const localData = JSON.parse(fs.readFileSync(localDataPath, 'utf-8'));
+            payload.categories = localData.categories || [];
+          }
+        } catch (e) {}
       }
       await writeSiteData(payload);
       return res.status(200).json({ success: true });

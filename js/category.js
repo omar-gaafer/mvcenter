@@ -122,7 +122,10 @@ function showProductDetails(id) {
       </a>
     </div>
   `;
-  dialog.showModal();
+  if (dialog) {
+    dialog.scrollTop = 0;
+    dialog.showModal();
+  }
 }
 
 if ($('#categoryProductGrid')) {
@@ -141,6 +144,19 @@ if ($('#categoryProductGrid')) {
 if ($('.dialog-close')) {
   $('.dialog-close').addEventListener('click', () => {
     if (dialog) dialog.close();
+  });
+}
+
+if (dialog) {
+  dialog.addEventListener('click', (e) => {
+    const rect = dialog.getBoundingClientRect();
+    const isInDialog = (
+      rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
+      rect.left <= e.clientX && e.clientX <= rect.left + rect.width
+    );
+    if (!isInDialog) {
+      dialog.close();
+    }
   });
 }
 

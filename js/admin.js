@@ -2,6 +2,50 @@
 const $ = (s) => document.querySelector(s);
 const data = typeof siteData !== 'undefined' ? siteData : (window.siteData || {});
 
+// Custom Toast Notification System (replaces native browser alert)
+function showAdminToast(message, type = 'success') {
+  let container = document.getElementById('adminToastContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'adminToastContainer';
+    container.className = 'admin-toast-container';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `admin-toast admin-toast-${type}`;
+  toast.innerHTML = `
+    <span class="toast-icon">${type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ'}</span>
+    <span class="toast-message">${message}</span>
+  `;
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add('toast-show');
+  }, 10);
+
+  setTimeout(() => {
+    toast.classList.remove('toast-show');
+    setTimeout(() => {
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 300);
+  }, 4000);
+}
+
+function handleSaveResult(success, reason, successMsg, failMsg, onSuccess) {
+  if (success) {
+    if (typeof onSuccess === 'function') onSuccess();
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('sitedataupdated'));
+    showAdminToast(successMsg, 'success');
+  } else if (reason === 'unauthorized') {
+    showAdminToast('انتهت جلسة الدخول. يرجى تسجيل الدخول مجددًا 🔒', 'error');
+    setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+  } else {
+    showAdminToast(failMsg || 'تعذر الحفظ في قاعدة البيانات. ✕', 'error');
+  }
+}
+
 // Auth Guard Check
 function getStoredToken() {
   return localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken');
@@ -140,10 +184,14 @@ function deleteProduct(id) {
     if (typeof window !== 'undefined' && window.siteData) window.siteData.products = currentData.products;
     if (typeof data !== 'undefined' && data) data.products = currentData.products;
   }
-  renderAdminProducts();
   if (typeof saveSiteData === 'function') {
-    saveSiteData(() => {
-      renderAdminProducts();
+    saveSiteData((success, reason) => {
+      handleSaveResult(
+        success, reason,
+        'تم حذف المنتج وتحديث البيانات في قاعدة البيانات بنجاح! ✓',
+        'تعذر حذف المنتج من قاعدة البيانات. يرجى المحاولة مرة أخرى. ✕',
+        () => { renderAdminProducts(); }
+      );
     });
   }
 }
@@ -250,10 +298,14 @@ function deletePartner(id) {
     if (typeof window !== 'undefined' && window.siteData) window.siteData.partners = currentData.partners;
     if (typeof data !== 'undefined' && data) data.partners = currentData.partners;
   }
-  renderAdminPartners();
   if (typeof saveSiteData === 'function') {
-    saveSiteData(() => {
-      renderAdminPartners();
+    saveSiteData((success, reason) => {
+      handleSaveResult(
+        success, reason,
+        'تم حذف الشركة الشريكة وتحديث البيانات في قاعدة البيانات بنجاح! ✓',
+        'تعذر حذف الشركة الشريكة من قاعدة البيانات. يرجى المحاولة مرة أخرى. ✕',
+        () => { renderAdminPartners(); }
+      );
     });
   }
 }
@@ -304,8 +356,16 @@ function moveAd(index, direction) {
   if (typeof window !== 'undefined') window.siteData = siteData;
   if (typeof data !== 'undefined' && data) data.ads = currentData.ads;
 
-  renderAdminAds();
-  if (typeof saveSiteData === 'function') saveSiteData();
+  if (typeof saveSiteData === 'function') {
+    saveSiteData((success, reason) => {
+      handleSaveResult(
+        success, reason,
+        'تم ترتيب الإعلانات وتحديث البيانات في قاعدة البيانات بنجاح! ✓',
+        'تعذر حفظ ترتيب الإعلانات في قاعدة البيانات. ✕',
+        () => { renderAdminAds(); }
+      );
+    });
+  }
 }
 
 function editAd(id) {
@@ -348,10 +408,14 @@ function deleteAd(id) {
     if (typeof window !== 'undefined' && window.siteData) window.siteData.ads = currentData.ads;
     if (typeof data !== 'undefined' && data) data.ads = currentData.ads;
   }
-  renderAdminAds();
   if (typeof saveSiteData === 'function') {
-    saveSiteData(() => {
-      renderAdminAds();
+    saveSiteData((success, reason) => {
+      handleSaveResult(
+        success, reason,
+        'تم حذف الإعلان من قاعدة البيانات بنجاح! ✓',
+        'تعذر حذف الإعلان من قاعدة البيانات. يرجى المحاولة مرة أخرى. ✕',
+        () => { renderAdminAds(); }
+      );
     });
   }
 }
@@ -381,8 +445,16 @@ function renderAdminLocationForm() {
       currentData.location.address = locAddr.value;
       currentData.location.hours = locHours.value;
       if (locMapUrl) currentData.location.mapUrl = locMapUrl.value;
-      if (typeof saveSiteData === 'function') saveSiteData();
-      alert('تم تحديث بيانات عنوان المركز وساعات العمل ورابط الخريطة بنجاح!');
+      if (typeof saveSiteData === 'function') {
+        saveSiteData((success) => {
+          if (success) {
+            if (window) window.dispatchEvent(new CustomEvent('sitedataupdated'));
+            showAdminToast('تم تحديث بيانات عنوان المركز وساعات العمل ورابط الخريطة في قاعدة البيانات بنجاح! ✓', 'success');
+          } else {
+            showAdminToast('تعذر حفظ بيانات العنوان في قاعدة البيانات. ✕', 'error');
+          }
+        });
+      }
     };
   }
 }
@@ -408,8 +480,16 @@ function renderAdminContactForm() {
       data.contact.phone = phoneIn.value;
       data.contact.whatsapp = waIn.value.replace(/[^0-9]/g, '');
       if (fbIn) data.contact.facebook = fbIn.value.trim();
-      if (typeof saveSiteData === 'function') saveSiteData();
-      alert('تم تحديث أرقام التواصل ورابط صفحة الفيسبوك بنجاح!');
+      if (typeof saveSiteData === 'function') {
+        saveSiteData((success) => {
+          if (success) {
+            if (window) window.dispatchEvent(new CustomEvent('sitedataupdated'));
+            showAdminToast('تم تحديث أرقام التواصل ورابط صفحة الفيسبوك في قاعدة البيانات بنجاح! ✓', 'success');
+          } else {
+            showAdminToast('تعذر حفظ بيانات التواصل في قاعدة البيانات. ✕', 'error');
+          }
+        });
+      }
     };
   }
 }
@@ -467,11 +547,17 @@ function viewMessage(id) {
         if (typeof window !== 'undefined' && window.siteData) window.siteData.messages = currentData.messages;
         if (typeof data !== 'undefined' && data) data.messages = currentData.messages;
       }
-      closeModal('#messageModal');
-      renderAdminMessages();
       if (typeof saveSiteData === 'function') {
-        saveSiteData(() => {
-          renderAdminMessages();
+        saveSiteData((success, reason) => {
+          handleSaveResult(
+            success, reason,
+            'تم حذف الاستفسار من قاعدة البيانات بنجاح! ✓',
+            'تعذر حذف الاستفسار من قاعدة البيانات. ✕',
+            () => {
+              closeModal('#messageModal');
+              renderAdminMessages();
+            }
+          );
         });
       }
     };
@@ -570,7 +656,7 @@ function saveProductData() {
   const details = $('#productDetailsInput').value;
   const usesStr = $('#productUsesInput').value;
 
-  if (!name) { alert('يرجى كتابة اسم المنتج أو العلاج'); return; }
+  if (!name) { showAdminToast('يرجى كتابة اسم المنتج أو العلاج', 'error'); return; }
 
   const catObj = getCategoryBySlug(catSlug);
   const categoryTitle = catObj ? catObj.badge || catObj.title : 'الأدوية البيطرية';
@@ -603,10 +689,19 @@ function saveProductData() {
     data.products.unshift(newProd);
   }
 
-  if (typeof saveSiteData === 'function') saveSiteData();
-  closeModal('#productModal');
-  renderAdminProducts();
-  alert('تم حفظ المنتج وتحديث بياناته بنجاح!');
+  if (typeof saveSiteData === 'function') {
+    saveSiteData((success, reason) => {
+      handleSaveResult(
+        success, reason,
+        'تم حفظ المنتج وتحديث بياناته في قاعدة البيانات بنجاح! ✓',
+        'تعذر حفظ المنتج في قاعدة البيانات. يرجى المحاولة مرة أخرى. ✕',
+        () => {
+          closeModal('#productModal');
+          renderAdminProducts();
+        }
+      );
+    });
+  }
 }
 
 function saveCategoryData() {
@@ -621,12 +716,21 @@ function saveCategoryData() {
     c.image = $('#categoryImageInput').value;
     c.text = $('#categoryTextInput').value;
     c.details = $('#categoryDetailsInput').value;
-    if (typeof saveSiteData === 'function') saveSiteData();
-    renderAdminCategories();
-    closeModal('#categoryModal');
-    alert('تم تحديث غلاف الفئة وتفاصيلها بنجاح!');
+    if (typeof saveSiteData === 'function') {
+      saveSiteData((success, reason) => {
+        handleSaveResult(
+          success, reason,
+          'تم تحديث غلاف الفئة وتفاصيلها في قاعدة البيانات بنجاح! ✓',
+          'تعذر حفظ بيانات غلاف الفئة في قاعدة البيانات. ✕',
+          () => {
+            renderAdminCategories();
+            closeModal('#categoryModal');
+          }
+        );
+      });
+    }
   } else {
-    alert('تعذر العثور على الفئة المحددة لتعديلها.');
+    showAdminToast('تعذر العثور على الفئة المحددة لتعديلها.', 'error');
   }
 }
 
@@ -647,7 +751,7 @@ function savePartnerData() {
   const logo = $('#partnerLogoInput').value || '🏢';
   const type = $('#partnerTypeInput').value || 'شركة شريكة';
 
-  if (!name) { alert('يرجى إدخال اسم الشركة الشريكة'); return; }
+  if (!name) { showAdminToast('يرجى إدخال اسم الشركة الشريكة', 'error'); return; }
 
   if (pId) {
     const p = data.partners ? data.partners.find(x => x.id === Number(pId)) : null;
@@ -666,10 +770,19 @@ function savePartnerData() {
     });
   }
 
-  if (typeof saveSiteData === 'function') saveSiteData();
-  closeModal('#partnerModal');
-  renderAdminPartners();
-  alert('تم حفظ وإضافة الشركة الشريكة بنجاح!');
+  if (typeof saveSiteData === 'function') {
+    saveSiteData((success, reason) => {
+      handleSaveResult(
+        success, reason,
+        'تم حفظ وإضافة الشركة الشريكة في قاعدة البيانات بنجاح! ✓',
+        'تعذر حفظ الشركة الشريكة في قاعدة البيانات. ✕',
+        () => {
+          closeModal('#partnerModal');
+          renderAdminPartners();
+        }
+      );
+    });
+  }
 }
 
 function openAdModalForNew() {
@@ -703,7 +816,7 @@ function saveAdData() {
   const highlights = rawHighlights ? rawHighlights.split('\n').map(s => s.trim()).filter(Boolean) : [];
   const featured = $('#adFeaturedInput') ? $('#adFeaturedInput').checked : false;
 
-  if (!title) { alert('يرجى إدخال عنوان الإعلان'); return; }
+  if (!title) { showAdminToast('يرجى إدخال عنوان الإعلان', 'error'); return; }
 
   if (adId) {
     let a = (typeof getAdById === 'function' ? getAdById(adId) : null) || currentData.ads.find(x => x.id == adId || String(x.id) === String(adId));
@@ -739,10 +852,19 @@ function saveAdData() {
   if (typeof window !== 'undefined') window.siteData = siteData;
   if (typeof data !== 'undefined' && data) data.ads = currentData.ads;
 
-  if (typeof saveSiteData === 'function') saveSiteData();
-  renderAdminAds();
-  closeModal('#adModal');
-  alert('تم حفظ الإعلان وتحديث بيانات الـ Pop-Up بنجاح!');
+  if (typeof saveSiteData === 'function') {
+    saveSiteData((success, reason) => {
+      handleSaveResult(
+        success, reason,
+        'تم حفظ الإعلان وتحديث بيانات الـ Pop-Up في قاعدة البيانات بنجاح! ✓',
+        'تعذر حفظ الإعلان في قاعدة البيانات. ✕',
+        () => {
+          closeModal('#adModal');
+          renderAdminAds();
+        }
+      );
+    });
+  }
 }
 
 // -------------------------------------------------------------
