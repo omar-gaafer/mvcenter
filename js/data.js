@@ -81,10 +81,25 @@ var siteData = {
 // strings or database credentials in this browser-delivered file.
 const SITE_DATA_API = '/api/site-data';
 
+function showSiteLoader(show) {
+  if (typeof document === 'undefined') return;
+  let loader = document.getElementById('siteGlobalLoader');
+  if (!loader && show) {
+    loader = document.createElement('div');
+    loader.id = 'siteGlobalLoader';
+    document.body.appendChild(loader);
+  }
+  if (loader) {
+    if (show) loader.classList.add('active');
+    else loader.classList.remove('active');
+  }
+}
+
 function saveSiteData(callback) {
   const token = (typeof localStorage !== 'undefined' && localStorage.getItem('adminToken')) || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('adminToken')) || '';
   if (!token) { if (typeof callback === 'function') callback(false, 'unauthorized'); return Promise.resolve(false); }
-  return fetch(SITE_DATA_API, { method:'PUT', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`}, body:JSON.stringify({payload:siteData}) }).then(response=>{if(!response.ok){const err = new Error(response.status === 401 ? 'unauthorized' : 'Save failed'); err.status = response.status; throw err;}return response.json();}).then(()=>{if(typeof callback==='function')callback(true);return true;}).catch(error=>{console.error('Site data save error:',error);const reason = error.message === 'unauthorized' ? 'unauthorized' : 'error';if(typeof callback==='function')callback(false, reason);return false;});
+  showSiteLoader(true);
+  return fetch(SITE_DATA_API, { method:'PUT', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`}, body:JSON.stringify({payload:siteData}) }).then(response=>{if(!response.ok){const err = new Error(response.status === 401 ? 'unauthorized' : 'Save failed'); err.status = response.status; throw err;}return response.json();}).then(()=>{if(typeof callback==='function')callback(true);return true;}).catch(error=>{console.error('Site data save error:',error);const reason = error.message === 'unauthorized' ? 'unauthorized' : 'error';if(typeof callback==='function')callback(false, reason);return false;}).finally(()=>{ showSiteLoader(false); });
 }
 
 /* Legacy implementation retained below only for line-history compatibility; it is unreachable. */
@@ -211,7 +226,8 @@ function legacyLoadSiteData(onComplete) {
 
 function loadSiteData(onComplete) {
   if (typeof fetch === 'undefined') return Promise.resolve(siteData);
-  return fetch(SITE_DATA_API,{cache:'no-store'}).then(response=>{if(!response.ok)throw new Error('Load failed');return response.json();}).then(result=>{const payload=result&&result.payload;if(payload&&typeof payload==='object'&&Array.isArray(payload.categories)&&Array.isArray(payload.products)){Object.assign(siteData,payload);window.dispatchEvent(new CustomEvent('sitedataupdated'));}if(typeof onComplete==='function')onComplete(siteData);return siteData;}).catch(error=>{console.warn('Site data load error:',error);if(typeof onComplete==='function')onComplete(siteData);return siteData;});
+  showSiteLoader(true);
+  return fetch(SITE_DATA_API,{cache:'no-store'}).then(response=>{if(!response.ok)throw new Error('Load failed');return response.json();}).then(result=>{const payload=result&&result.payload;if(payload&&typeof payload==='object'&&Array.isArray(payload.categories)&&Array.isArray(payload.products)){Object.assign(siteData,payload);if(typeof window!=='undefined')window.dispatchEvent(new CustomEvent('sitedataupdated'));}if(typeof onComplete==='function')onComplete(siteData);return siteData;}).catch(error=>{console.warn('Site data load error:',error);if(typeof onComplete==='function')onComplete(siteData);return siteData;}).finally(()=>{ showSiteLoader(false); });
 }
 loadSiteData();
 

@@ -15,7 +15,7 @@ function showAdminToast(message, type = 'success') {
   const toast = document.createElement('div');
   toast.className = `admin-toast admin-toast-${type}`;
   toast.innerHTML = `
-    <span class="toast-icon">${type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ'}</span>
+    <span class="toast-icon">${type === 'success' ? '✓' : type === 'error' ? '✕' : type === 'loading' ? '<span class="ui-spinner"></span>' : 'ℹ'}</span>
     <span class="toast-message">${message}</span>
   `;
 
@@ -25,15 +25,47 @@ function showAdminToast(message, type = 'success') {
     toast.classList.add('toast-show');
   }, 10);
 
-  setTimeout(() => {
-    toast.classList.remove('toast-show');
+  if (type !== 'loading') {
     setTimeout(() => {
-      if (toast.parentNode) toast.parentNode.removeChild(toast);
-    }, 300);
-  }, 4000);
+      toast.classList.remove('toast-show');
+      setTimeout(() => {
+        if (toast.parentNode) toast.parentNode.removeChild(toast);
+      }, 300);
+    }, 4000);
+  }
+
+  return toast;
 }
 
-function handleSaveResult(success, reason, successMsg, failMsg, onSuccess) {
+function dismissToast(toastEl) {
+  if (!toastEl) return;
+  toastEl.classList.remove('toast-show');
+  setTimeout(() => {
+    if (toastEl.parentNode) toastEl.parentNode.removeChild(toastEl);
+  }, 300);
+}
+
+function setButtonLoading(btn, isLoading, loadingText = 'جاري الحفظ...') {
+  if (!btn) return;
+  if (isLoading) {
+    btn.dataset.originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.classList.add('button-loading');
+    btn.innerHTML = `<span class="ui-spinner"></span> <span>${loadingText}</span>`;
+  } else {
+    btn.disabled = false;
+    btn.classList.remove('button-loading');
+    if (btn.dataset.originalText) {
+      btn.innerHTML = btn.dataset.originalText;
+      delete btn.dataset.originalText;
+    }
+  }
+}
+
+function handleSaveResult(success, reason, successMsg, failMsg, onSuccess, loadingToast, btn) {
+  if (loadingToast) dismissToast(loadingToast);
+  if (btn) setButtonLoading(btn, false);
+
   if (success) {
     if (typeof onSuccess === 'function') onSuccess();
     if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('sitedataupdated'));
@@ -184,13 +216,15 @@ function deleteProduct(id) {
     if (typeof window !== 'undefined' && window.siteData) window.siteData.products = currentData.products;
     if (typeof data !== 'undefined' && data) data.products = currentData.products;
   }
+  const loadingToast = showAdminToast('جاري حذف المنتج من قاعدة البيانات...', 'loading');
   if (typeof saveSiteData === 'function') {
     saveSiteData((success, reason) => {
       handleSaveResult(
         success, reason,
         'تم حذف المنتج وتحديث البيانات في قاعدة البيانات بنجاح! ✓',
         'تعذر حذف المنتج من قاعدة البيانات. يرجى المحاولة مرة أخرى. ✕',
-        () => { renderAdminProducts(); }
+        () => { renderAdminProducts(); },
+        loadingToast
       );
     });
   }
@@ -298,13 +332,15 @@ function deletePartner(id) {
     if (typeof window !== 'undefined' && window.siteData) window.siteData.partners = currentData.partners;
     if (typeof data !== 'undefined' && data) data.partners = currentData.partners;
   }
+  const loadingToast = showAdminToast('جاري حذف الشركة الشريكة من قاعدة البيانات...', 'loading');
   if (typeof saveSiteData === 'function') {
     saveSiteData((success, reason) => {
       handleSaveResult(
         success, reason,
         'تم حذف الشركة الشريكة وتحديث البيانات في قاعدة البيانات بنجاح! ✓',
         'تعذر حذف الشركة الشريكة من قاعدة البيانات. يرجى المحاولة مرة أخرى. ✕',
-        () => { renderAdminPartners(); }
+        () => { renderAdminPartners(); },
+        loadingToast
       );
     });
   }
@@ -356,13 +392,16 @@ function moveAd(index, direction) {
   if (typeof window !== 'undefined') window.siteData = siteData;
   if (typeof data !== 'undefined' && data) data.ads = currentData.ads;
 
+  const loadingToast = showAdminToast('جاري حفظ ترتيب الإعلانات في قاعدة البيانات...', 'loading');
+
   if (typeof saveSiteData === 'function') {
     saveSiteData((success, reason) => {
       handleSaveResult(
         success, reason,
         'تم ترتيب الإعلانات وتحديث البيانات في قاعدة البيانات بنجاح! ✓',
         'تعذر حفظ ترتيب الإعلانات في قاعدة البيانات. ✕',
-        () => { renderAdminAds(); }
+        () => { renderAdminAds(); },
+        loadingToast
       );
     });
   }
@@ -408,13 +447,15 @@ function deleteAd(id) {
     if (typeof window !== 'undefined' && window.siteData) window.siteData.ads = currentData.ads;
     if (typeof data !== 'undefined' && data) data.ads = currentData.ads;
   }
+  const loadingToast = showAdminToast('جاري حذف الإعلان من قاعدة البيانات...', 'loading');
   if (typeof saveSiteData === 'function') {
     saveSiteData((success, reason) => {
       handleSaveResult(
         success, reason,
         'تم حذف الإعلان من قاعدة البيانات بنجاح! ✓',
         'تعذر حذف الإعلان من قاعدة البيانات. يرجى المحاولة مرة أخرى. ✕',
-        () => { renderAdminAds(); }
+        () => { renderAdminAds(); },
+        loadingToast
       );
     });
   }
@@ -445,14 +486,21 @@ function renderAdminLocationForm() {
       currentData.location.address = locAddr.value;
       currentData.location.hours = locHours.value;
       if (locMapUrl) currentData.location.mapUrl = locMapUrl.value;
+
+      const btn = form.querySelector('button[type="submit"]');
+      setButtonLoading(btn, true, 'جاري الحفظ...');
+      const loadingToast = showAdminToast('جاري تحديث بيانات عنوان المركز في قاعدة البيانات...', 'loading');
+
       if (typeof saveSiteData === 'function') {
-        saveSiteData((success) => {
-          if (success) {
-            if (window) window.dispatchEvent(new CustomEvent('sitedataupdated'));
-            showAdminToast('تم تحديث بيانات عنوان المركز وساعات العمل ورابط الخريطة في قاعدة البيانات بنجاح! ✓', 'success');
-          } else {
-            showAdminToast('تعذر حفظ بيانات العنوان في قاعدة البيانات. ✕', 'error');
-          }
+        saveSiteData((success, reason) => {
+          handleSaveResult(
+            success, reason,
+            'تم تحديث بيانات عنوان المركز وساعات العمل ورابط الخريطة في قاعدة البيانات بنجاح! ✓',
+            'تعذر حفظ بيانات العنوان في قاعدة البيانات. ✕',
+            null,
+            loadingToast,
+            btn
+          );
         });
       }
     };
@@ -480,14 +528,21 @@ function renderAdminContactForm() {
       data.contact.phone = phoneIn.value;
       data.contact.whatsapp = waIn.value.replace(/[^0-9]/g, '');
       if (fbIn) data.contact.facebook = fbIn.value.trim();
+
+      const btn = form.querySelector('button[type="submit"]');
+      setButtonLoading(btn, true, 'جاري الحفظ...');
+      const loadingToast = showAdminToast('جاري تحديث أرقام التواصل ورابط الفيسبوك في قاعدة البيانات...', 'loading');
+
       if (typeof saveSiteData === 'function') {
-        saveSiteData((success) => {
-          if (success) {
-            if (window) window.dispatchEvent(new CustomEvent('sitedataupdated'));
-            showAdminToast('تم تحديث أرقام التواصل ورابط صفحة الفيسبوك في قاعدة البيانات بنجاح! ✓', 'success');
-          } else {
-            showAdminToast('تعذر حفظ بيانات التواصل في قاعدة البيانات. ✕', 'error');
-          }
+        saveSiteData((success, reason) => {
+          handleSaveResult(
+            success, reason,
+            'تم تحديث أرقام التواصل ورابط صفحة الفيسبوك في قاعدة البيانات بنجاح! ✓',
+            'تعذر حفظ بيانات التواصل في قاعدة البيانات. ✕',
+            null,
+            loadingToast,
+            btn
+          );
         });
       }
     };
@@ -547,6 +602,7 @@ function viewMessage(id) {
         if (typeof window !== 'undefined' && window.siteData) window.siteData.messages = currentData.messages;
         if (typeof data !== 'undefined' && data) data.messages = currentData.messages;
       }
+      const loadingToast = showAdminToast('جاري حذف الاستفسار من قاعدة البيانات...', 'loading');
       if (typeof saveSiteData === 'function') {
         saveSiteData((success, reason) => {
           handleSaveResult(
@@ -556,7 +612,8 @@ function viewMessage(id) {
             () => {
               closeModal('#messageModal');
               renderAdminMessages();
-            }
+            },
+            loadingToast
           );
         });
       }
@@ -689,6 +746,10 @@ function saveProductData() {
     data.products.unshift(newProd);
   }
 
+  const btn = $('#saveProductBtn');
+  setButtonLoading(btn, true, 'جاري الحفظ في قاعدة البيانات...');
+  const loadingToast = showAdminToast('جاري حفظ المنتج وتحديث بياناته في قاعدة البيانات...', 'loading');
+
   if (typeof saveSiteData === 'function') {
     saveSiteData((success, reason) => {
       handleSaveResult(
@@ -698,7 +759,9 @@ function saveProductData() {
         () => {
           closeModal('#productModal');
           renderAdminProducts();
-        }
+        },
+        loadingToast,
+        btn
       );
     });
   }
@@ -716,6 +779,11 @@ function saveCategoryData() {
     c.image = $('#categoryImageInput').value;
     c.text = $('#categoryTextInput').value;
     c.details = $('#categoryDetailsInput').value;
+
+    const btn = $('#saveCategoryBtn');
+    setButtonLoading(btn, true, 'جاري الحفظ...');
+    const loadingToast = showAdminToast('جاري تحديث غلاف الفئة في قاعدة البيانات...', 'loading');
+
     if (typeof saveSiteData === 'function') {
       saveSiteData((success, reason) => {
         handleSaveResult(
@@ -725,7 +793,9 @@ function saveCategoryData() {
           () => {
             renderAdminCategories();
             closeModal('#categoryModal');
-          }
+          },
+          loadingToast,
+          btn
         );
       });
     }
@@ -770,6 +840,10 @@ function savePartnerData() {
     });
   }
 
+  const btn = $('#savePartnerBtn');
+  setButtonLoading(btn, true, 'جاري الحفظ...');
+  const loadingToast = showAdminToast('جاري حفظ الشركة الشريكة في قاعدة البيانات...', 'loading');
+
   if (typeof saveSiteData === 'function') {
     saveSiteData((success, reason) => {
       handleSaveResult(
@@ -779,7 +853,9 @@ function savePartnerData() {
         () => {
           closeModal('#partnerModal');
           renderAdminPartners();
-        }
+        },
+        loadingToast,
+        btn
       );
     });
   }
@@ -852,6 +928,10 @@ function saveAdData() {
   if (typeof window !== 'undefined') window.siteData = siteData;
   if (typeof data !== 'undefined' && data) data.ads = currentData.ads;
 
+  const btn = $('#saveAdBtn');
+  setButtonLoading(btn, true, 'جاري الحفظ...');
+  const loadingToast = showAdminToast('جاري حفظ الإعلان وتحديث بيانات الـ Pop-Up...', 'loading');
+
   if (typeof saveSiteData === 'function') {
     saveSiteData((success, reason) => {
       handleSaveResult(
@@ -861,7 +941,9 @@ function saveAdData() {
         () => {
           closeModal('#adModal');
           renderAdminAds();
-        }
+        },
+        loadingToast,
+        btn
       );
     });
   }

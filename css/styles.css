@@ -1595,4 +1595,69 @@
   flex-shrink: 0;
 }
 
+.admin-toast-loading {
+  background: #0f172a;
+  color: #f8fafc;
+  border: 1px solid #334155;
+}
+.admin-toast-loading .toast-icon {
+  background: transparent;
+}
+
+/* UI Spinner & Global Loading Bar */
+.ui-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: ui-spin 0.65s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.admin-toast-loading .ui-spinner {
+  border-top-color: #38bdf8;
+}
+
+@keyframes ui-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Global Site Progress Bar Loader */
+#siteGlobalLoader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #2563eb, #059669, #eab308, #2563eb);
+  background-size: 200% 100%;
+  z-index: 999999;
+  animation: site-loading-bar 1.2s linear infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+#siteGlobalLoader.active {
+  opacity: 1;
+}
+
+@keyframes site-loading-bar {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+
+/* Button Loading State */
+.button-loading {
+  position: relative;
+  pointer-events: none !important;
+  opacity: 0.82;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+
 
