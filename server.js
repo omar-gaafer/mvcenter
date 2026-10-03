@@ -196,7 +196,10 @@ const server = http.createServer((req, res) => {
         return;
       }
       if (!activeTokens.has(token)) {
-        activeTokens.add(token);
+        setCorsHeaders(res);
+        res.writeHead(401, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ success: false, error: 'غير مصرح لك بإجراء هذه العملية. رمز الجلسة غير صالح أو منتهي.' }));
+        return;
       }
 
       try {
@@ -278,8 +281,15 @@ const server = http.createServer((req, res) => {
 
   if (reqUrl === '/') reqUrl = '/index.html';
 
-  const safeUrl = path.normalize(reqUrl).replace(/^(\.\.[\/\\])+/, '');
-  const filePath = path.join(PUBLIC_DIR, safeUrl);
+  const safePath = path.normalize(reqUrl).replace(/^(\.\.[\/\\])+/, '');
+  const filePath = path.join(PUBLIC_DIR, safePath);
+
+  if (!filePath.startsWith(PUBLIC_DIR)) {
+    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Access Denied');
+    return;
+  }
+
   const ext = path.extname(filePath).toLowerCase();
   const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 

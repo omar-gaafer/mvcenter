@@ -16,6 +16,11 @@ let initialized = false;
 async function ensureTable(db) {
   if (!initialized) {
     await db.query('CREATE TABLE IF NOT EXISTS mvc_site_data (id INTEGER PRIMARY KEY, payload JSONB NOT NULL, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())');
+    try {
+      await db.query('ALTER TABLE mvc_site_data ENABLE ROW LEVEL SECURITY');
+    } catch (e) {
+      console.warn('RLS setup info:', e.message);
+    }
     initialized = true;
   }
 }
