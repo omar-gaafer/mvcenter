@@ -54,6 +54,24 @@ var siteData = {
       icon: '✚',
       text: 'فيتامينات وأملاح معدنية لدعم الإنتاجية والمناعة.',
       details: 'مستحضرات مساندة تعزز الجهاز المناعي ومعدلات التحويل، وتساعد الحيوان على تجاوز فترات الإجهاد وتغيرات الفصول.'
+    },
+    {
+      id: 'pet-supplies',
+      badge: 'مستلزمات الحيوانات الأليفة',
+      title: 'أغذية ومستلزمات أليفة',
+      slug: 'pet-supplies',
+      icon: '🐾',
+      text: 'أغذية ومستلزمات متكاملة للقطط والكلاب والحيوانات الأليفة.',
+      details: 'نوفر تشكيلة واسعة من أطعمة القطط والكلاب (دراي فود، رطب) ومستلزمات العناية والنظافة والإكسسوارات المعتمدة بأعلى جودة.'
+    },
+    {
+      id: 'surgical-tools',
+      badge: 'الأدوات الجراحية',
+      title: 'أدوات ومعدات جراحية',
+      slug: 'surgical-tools',
+      icon: '✂',
+      text: 'أدوات وتجهيزات جراحية بيطرية دقيقة ومعقمة.',
+      details: 'أدوات ومعدات جراحية بيطرية متكاملة تشمل أدوات الخياطة والقطع والتعقيم المعتمدة للعمليات والفحوصات الجراحية.'
     }
   ],
   products: [],
@@ -61,14 +79,14 @@ var siteData = {
   partners: [],
   location: {
     title: 'عنوان المركز البيطري الحديث بالسنطة',
-    address: 'السنطة، الشارع الرئيسي (بجوار الصيدلية المركزية)، محافظة الغربية، مصر',
-    hours: 'يوميًا من 9:00 صباحًا حتى 10:00 مساءً',
+    address: 'شارع المحكمة القديمة، السنطة، الغربية',
+    hours: 'يوميًا من 9:00 صباحًا حتى 12:00 منتصف الليل',
     mapUrl: 'https://www.google.com/maps/place/%D8%A7%D9%84%D9%85%D8%B1%D9%83%D8%B2+%D8%A7%D9%84%D8%A8%D9%8A%D8%B7%D8%B1%D9%8A+%D8%A7%D9%84%D8%AD%D8%AF%D9%8A%D8%AB+%D8%A8%D8%A7%D9%84%D8%B3%D9%86%D8%B7%D8%A9%E2%80%AD/@30.7282547,31.1148443,17z/data=!4m14!1m7!3m6!1s0x14f7c56df9ddceab:0xeef2fa61f7a8f3d!2z2KfZhNmF2LHZg9iyINin2YTYqNmK2LfYsdmKINin2YTYrdiv2YrYqyDYqNin2YTYs9mG2LfYqQ!8m2!3d30.7282547!4d31.1148443!16s%2Fg%2F11zys2km5n!3m5!1s0x14f7c56df9ddceab:0xeef2fa61f7a8f3d!8m2!3d30.7282547!4d31.1148443!16s%2Fg%2F11zys2km5n?hl=ar&entry=ttu&g_ep=EgoyMDI2MDkxNS4wIKXMDSoASAFQAw%3D%3D',
     mapNotes: 'موقع وتوجيهات خريطة Google بالسنطة'
   },
   contact: {
-    phone: '+201000000000',
-    whatsapp: '201000000000',
+    phone: '+201000762243',
+    whatsapp: '201000762243',
     email: 'contact@mvc-vet.com',
     facebook: 'https://www.facebook.com/profile.php?id=61594079684250'
   },

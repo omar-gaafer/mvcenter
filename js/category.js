@@ -31,7 +31,7 @@ function renderCategoryPage() {
 
   const iconEl = $('#categoryIcon');
   if (categoryObj && categoryObj.image && (categoryObj.image.startsWith('http') || categoryObj.image.startsWith('data:'))) {
-    iconEl.innerHTML = `<img src="${categoryObj.image}" alt="${displayTitle}" style="width:100%; height:100%; object-fit:cover; border-radius:14px;" />`;
+    iconEl.innerHTML = `<img src="${categoryObj.image}" alt="${displayTitle}" style="width:100%; height:100%; object-fit:contain; background-color:#ffffff; border-radius:14px;" />`;
   } else {
     iconEl.textContent = displayIcon;
   }
@@ -60,7 +60,7 @@ function renderCategoryPage() {
       <div class="product-image">
         <span>${p.category}</span>
         ${p.image && (p.image.startsWith('http') || p.image.startsWith('data:'))
-          ? `<img src="${p.image}" alt="${p.name}" style="width:100%; height:100%; object-fit:cover;" />`
+          ? `<img src="${p.image}" alt="${p.name}" style="width:100%; height:100%; object-fit:contain; background-color:#ffffff; padding:12px; box-sizing:border-box;" />`
           : p.icon}
       </div>
       <div class="product-body">
@@ -104,7 +104,7 @@ function showProductDetails(id) {
     <div class="product-image">
       <span>${p.category}</span>
       ${p.image && (p.image.startsWith('http') || p.image.startsWith('data:'))
-        ? `<img src="${p.image}" alt="${p.name}" style="width:100%; height:100%; object-fit:cover;" />`
+        ? `<img src="${p.image}" alt="${p.name}" style="width:100%; height:100%; object-fit:contain; background-color:#ffffff; padding:8px; box-sizing:border-box;" />`
         : p.icon}
     </div>
     <p class="eyebrow">${p.category}</p>

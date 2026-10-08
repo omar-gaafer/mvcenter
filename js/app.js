@@ -28,7 +28,7 @@ function renderCategoryCards() {
     const hasImage = c.image && (c.image.startsWith('http') || c.image.startsWith('data:'));
     return `
     <a href="category.html?cat=${encodeURIComponent(c.slug)}" class="category-type-card" aria-label="عرض منتجات ${c.title}">
-      <div class="category-type-header" style="${hasImage ? `background-image: url('${c.image}'); background-size: cover; background-position: center;` : ''}">
+      <div class="category-type-header" style="${hasImage ? `background-image: url('${c.image}'); background-size: contain; background-repeat: no-repeat; background-position: center; background-color: #ffffff;` : ''}">
         <span class="category-type-badge">${c.badge || c.title}</span>
         ${hasImage ? '' : `<span class="category-type-icon">${c.icon}</span>`}
       </div>
@@ -73,7 +73,7 @@ function showProduct(id) {
     <div class="product-image">
       <span>${p.category}</span>
       ${p.image && (p.image.startsWith('http') || p.image.startsWith('data:'))
-        ? `<img src="${p.image}" alt="${p.name}" style="width:100%; height:100%; object-fit:cover;" />`
+        ? `<img src="${p.image}" alt="${p.name}" style="width:100%; height:100%; object-fit:contain; background-color:#ffffff; padding:8px; box-sizing:border-box;" />`
         : p.icon}
     </div>
     <p class="eyebrow">${p.category}</p>
@@ -137,7 +137,7 @@ function showAdDetails(id) {
     : '';
 
   const imageHTML = (a.image && (a.image.startsWith('http') || a.image.startsWith('data:')))
-    ? `<div class="ad-dialog-cover"><img src="${a.image}" alt="${a.title}" /></div>`
+    ? `<div class="ad-dialog-cover"><img src="${a.image}" alt="${a.title}" style="width:100%; height:100%; object-fit:contain; background-color:#ffffff; padding:10px; box-sizing:border-box;" /></div>`
     : '';
 
   $('#adDialogContent').innerHTML = `
@@ -184,7 +184,7 @@ function renderAds() {
   adGrid.innerHTML = currentData.ads.map(a => `
     <article class="ad ${a.featured ? 'featured' : ''}" data-ad-id="${a.id}" tabindex="0" role="button" aria-label="عرض تفاصيل ${a.title}">
       ${a.image && (a.image.startsWith('http') || a.image.startsWith('data:'))
-        ? `<div class="ad-card-cover" style="height:150px; background-image:url('${a.image}'); background-size:cover; background-position:center; border-radius:12px 12px 0 0; margin:-22px -22px 16px;"></div>`
+        ? `<div class="ad-card-cover" style="height:160px; background-image:url('${a.image}'); background-size:contain; background-repeat:no-repeat; background-position:center; background-color:#ffffff; border-radius:12px 12px 0 0; margin:-22px -22px 16px; border-bottom:1px solid #eef2f7;"></div>`
         : ''}
       <div>
         <small>${a.tag || a.date}</small>
